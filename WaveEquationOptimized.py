@@ -6,7 +6,7 @@
 import numpy as np
 import pylab as pl
 import matplotlib as mat
-import matplotlib.animation as m
+import matplotlib.animation as anim
 
 
 def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
@@ -45,7 +45,9 @@ def initialSlices(f, rows, cols):
 
 When edgeType is set to 0, the points along the edge of the grid are killed to 0, and then the discretized wave equation is applied for 
 all later times only to the points on the interior of the grid. So, we discard the data along the boundary.
-When edgeType is set to 1, it cyclically takes the corresponding values from the opposite edges of the grid. No data is discarded.
+When edgeType is set to 1, the boundary values are discarded and replaced with the corresponding values computed using the discretized 
+wave equation and applying the opposite edges' values cyclically. This uses for loops instead of array splicing and so runs much more 
+slowly.
 
 k is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
 method to successfully approximate a solution to the wave equation, k must be less than 1. The accompanying documentation file explains 
@@ -54,15 +56,15 @@ computed for a given wave period. The way this program is built, the time-resolu
 Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher k 
 means the delta t between time-slices is higher (k is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high k 
-will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended k is 0.3.
+will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended k is 0.1 to 0.5.
 """
-edgeType=0
+edgeType=0 #0 for zeros along edges. 1 for cyclical edges (periodic boundary condition).
 
 tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=400
-colcnt=400
+rowcnt=200
+colcnt=200
 
-k=0.4 #k=(waveSpeed*dt/dx)**2
+k=0.3 #k=(waveSpeed*dt/dx)**2
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
@@ -81,8 +83,30 @@ The following discretized equations were derived from the wave equation, as expl
 if edgeType==0:
     for t in range(2,tstepcnt):
         u[1:-1,1:-1,t]=k*(u[:-2,1:-1,t-1]+u[2:,1:-1,t-1]+u[1:-1,:-2,t-1]+u[1:-1,2:,t-1]-4*u[1:-1,1:-1,t-1])+2*u[1:-1,1:-1,t-1]-u[1:-1,1:-1,t-2]
+elif edgeType==1:
+    for t in range(2,tstepcnt):
+        u[1:-1,1:-1,t]=k*(u[:-2,1:-1,t-1]+u[2:,1:-1,t-1]+u[1:-1,:-2,t-1]+u[1:-1,2:,t-1]-4*u[1:-1,1:-1,t-1])+2*u[1:-1,1:-1,t-1]-u[1:-1,1:-1,t-2]
+        for m in range(0,rowcnt): #so m represents the y direction (row index number)
+            for n in range(0,colcnt): #so n represents the x direction (column index number)
+                if m==0 and n!=0 and n!=colcnt-1: #0th row excl. corners
+                    u[m][n][t]=k*(u[m][n+1][t-1]+u[m][n-1][t-1]+u[m+1][n][t-1]+ u[m-1][n][t-1] -4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+                elif m==rowcnt-1 and n!=0 and n!=colcnt-1: #last row ex.corners
+                    u[m][n][t]=k*(u[m][n+1][t-1]+u[m][n-1][t-1]+ u[0][n][t-1] +u[m-1][n][t-1]-4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+                elif n==0 and m!=0 and m!=rowcnt-1: #0th column ex.corn.
+                    u[m][n][t]=k*(u[m][n+1][t-1]+ u[m][n-1][t-1] +u[m+1][n][t-1]+u[m-1][n][t-1]-4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+                elif n==colcnt-1 and m!=0 and m!=rowcnt-1: #last column ex.c.
+                    u[m][n][t]=k*( u[m][0][t-1] +u[m][n-1][t-1]+u[m+1][n][t-1]+u[m-1][n][t-1]-4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+            
+                #corners:
+                elif m==0 and n==0: #top left corner
+                    u[m][n][t]=k*(u[m][n+1][t-1]+ u[m][n-1][t-1] +u[m+1][n][t-1]+ u[m-1][n][t-1] -4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+                elif m==0 and n==colcnt-1: #top right corner
+                    u[m][n][t]=k*( u[m][0][t-1] +u[m][n-1][t-1]+u[m+1][n][t-1]+ u[m-1][n][t-1] -4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+                elif m==rowcnt-1 and n==0: #bottom left corner
+                    u[m][n][t]=k*(u[m][n+1][t-1]+ u[m][n-1][t-1] + u[0][n][t-1] +u[m-1][n][t-1]-4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
+                elif m==rowcnt-1 and n==colcnt-1: #bottom right corner
+                    u[m][n][t]=k*( u[m][0][t-1] +u[m][n-1][t-1]+ u[0][n][t-1] +u[m-1][n][t-1]-4*u[m][n][t-1])+2*u[m][n][t-1]-u[m][n][t-2]
 
-    
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
 """
@@ -101,7 +125,7 @@ def frame(n):
     ax.imshow(u[:,:,n])
     ax.set_aspect('equal')
     
-dummy = m.FuncAnimation(fig,frame,range(tstepcnt),interval=25)
+dummy = anim.FuncAnimation(fig,frame,range(tstepcnt),interval=25)
 pl.show()
 
 #run the following loop to print the time-slices chronologically as 2d arrays:
