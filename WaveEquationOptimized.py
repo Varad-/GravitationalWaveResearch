@@ -59,7 +59,7 @@ means the delta t between time-slices is higher (k is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high k 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended k is 0.1 to 0.4.
 """
-edgeType=0 #0 for zeros along edges. 1 for cyclical edges (periodic boundary condition).
+edgeType=1 #0 for zeros along edges. 1 for cyclical edges (periodic boundary condition).
 
 tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=400
