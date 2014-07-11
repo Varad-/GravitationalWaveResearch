@@ -101,7 +101,7 @@ print 'Computing...'
 """
 See documentation for the derivations of the following equations and the meaning of these variable names
 """
-for t in range(1,tstepcnt-1): #so t+1 computations done for range(2,tstepcnt)
+for t in range(2,tstepcnt):
     #?z=?
     f=eps*np.cos(k*z-k*t)
     #?and rotate the z...?
@@ -109,9 +109,8 @@ for t in range(1,tstepcnt-1): #so t+1 computations done for range(2,tstepcnt)
     M[0,0]=1+f
     M[1,1]=1-f
     T=TwoDimRotConj(M,theta)
-    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t])+T[0,1]*delnDySlice(u[:,:,t]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t])+T[1,1]*delnDySlice(u[:,:,t]))
-    u[:,:,t+1]=k*delsquaredLHS+2*u[:,:,t]-u[:,:,t-1]
-
+    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
+    u[:,:,t]=k*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
