@@ -11,17 +11,6 @@ import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as anim
 
-def TwoDimRotConj(Q,angle):
-    """
-    Takes a matrix Q and returns RQR^-1 where R is the rotation matrix for the given angle. Since R is orthogonal, R^-1=R^transpose
-    """
-    R=np.zeros((2,2))
-    R[0,0]=np.cos(angle)
-    R[0,1]=-np.sin(angle)
-    R[1,0]=np.sin(angle)
-    R[1,1]=np.cos(angle)
-    return R.dot(Q).dot(R.T)
-
 def delnDxSlice(tslice):
     """
     Takes a time slice and returns an evaluated 2d grid of the grid spacing (delta x) times the numerical derivative of f[row][col][time] 
@@ -108,8 +97,7 @@ for t in range(2,tstepcnt):
     M=np.zeros((2,2))
     M[0,0]=1+f
     M[1,1]=1-f
-    T=TwoDimRotConj(M,np.pi/2)
-    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
+    delsquaredLHS=delnDxSlice(M[0,0]*delnDxSlice(u[:,:,t-1])+M[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(M[1,0]*delnDxSlice(u[:,:,t-1])+M[1,1]*delnDySlice(u[:,:,t-1]))
     u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """

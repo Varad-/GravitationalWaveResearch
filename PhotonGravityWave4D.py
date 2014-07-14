@@ -2,20 +2,25 @@
 """
 @author: Varadarajan Srinivasan
 
-Using full (3+1)D computations, this program produces a (2+1)D animation showing a (electromagnetic) wave 
-being influenced by a gravitational wave
+(2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave for the special case that 
+the gravitational wave is perpendicular to the plane.
 """
-
 
 import numpy as np
 import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as anim
 
-def ThreeDimRotConj(Q,angle):
+def TwoDimRotConj(Q,angle):
     """
+    Takes a matrix Q and returns RQR^-1 where R is the rotation matrix for the given angle. Since R is orthogonal, R^-1=R^transpose
     """
-    
+    R=np.zeros((2,2))
+    R[0,0]=np.cos(angle)
+    R[0,1]=-np.sin(angle)
+    R[1,0]=np.sin(angle)
+    R[1,1]=np.cos(angle)
+    return R.dot(Q).dot(R.T)
 
 def delnDxSlice(tslice):
     """
@@ -79,11 +84,10 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=401 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=200
-colcnt=200
+tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+rowcnt=400
+colcnt=400
 
-theta=np.pi/2 #incident angle of the gravitational wave
 eps=0.3 #meaning of epsilon is in the documentation
 kg=0.02 #this is the k_grav from cos(kz-kt)
 K=0.25 #K=(waveSpeed*dt/dx)**2
@@ -99,16 +103,15 @@ print 'Computing...'
 """
 See documentation for the derivations of the following equations and the meaning of these variable names
 """
+z=#rotate R^-1 the z of the grav wave coordinate
 for t in range(2,tstepcnt):
-    z=0
     f=eps*np.cos(kg*(z-t))
-    M=np.zeros((3,3))
+    M=np.zeros((2,2))
     M[0,0]=1+f
     M[1,1]=1-f
-    M[2,2]=1
-    #T=TwoDimRotConj(M,theta)
-    #delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
-    #u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
+    T=TwoDimRotConj(M,0)
+    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
+    u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
