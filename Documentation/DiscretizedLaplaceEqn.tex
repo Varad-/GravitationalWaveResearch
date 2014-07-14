@@ -1,0 +1,52 @@
+\documentclass{article}
+\begin{document}
+\flushleft{
+{\large Discretizing the Laplace Equation and Computing a Numerical Solution: short documentation for DiscretizedLaplaceEqn.py}
+
+\smallskip
+Varadarajan Srinivasan
+\bigskip
+
+Let us first define the numerical derivative of a function f(x) at a point $x_0$ as the function's mean rate of change between $x_0-\Delta x$ and $x_0$ averaged with its mean rate of change between $x_0$ and $x_0+\Delta x$. If the function is well-behaved (differentiable at $x_0$), this can numerically approximate the true analytical value of the derivative to an arbitrarily high accuracy.
+
+In index notation, for a numerically defined function $f_n$ with step size $\Delta x$, we thus define the numerical derivative as
+\begin{equation}
+\mbox{nD}(f_n)=\frac{1}{2}\left(\frac{f_{n}-f_{n-1}}{\Delta x}+\frac{f_{n+1}-f_n}{\Delta x}\right)=\frac{f_{n+1}-f_{n-1}}{2\Delta x}
+\end{equation}
+We can similarly define the second numerical derivative as 
+\begin{equation}
+\mbox{nD}^2(f_n)=\mbox{nD}(\mbox{nD}(f_n))=\frac{\mbox{nD}(f_{n+1})-\mbox{nD}(f_{n-1})}{2\Delta x}
+\end{equation}
+where distribution is possible because nD is a linear transformation, in principle.
+\begin{equation} \label{bloated}
+=\frac{1}{2\Delta x}\left(\frac{f_{n+2}-f_{n}}{2\Delta x}-\frac{f_{n}-f_{n-2}}{2\Delta x}\right)=\frac{f_{n+2}-2f_{n}+f_{n-2}}{(2\Delta x)^2}
+\end{equation}
+We can contract the step sizes in Eq. \ref{bloated} such that $f_{n\pm 2}\rightarrow f_{n\pm 1}$ and $2\Delta x \rightarrow \Delta x$. Thus,
+\begin{equation} \label{1d}
+\mbox{nD}^2(f_n)=\frac{f_{n+1}-2f_{n}+f_{n-1}}{(\Delta x)^2}
+\end{equation}
+By the same process, we can extend Eq. \ref{1d} to two dimensions:
+\begin{equation}
+\mbox{nD}^2(f_{m,n})=\frac{f_{m,n+1}-2f_{m,n}+f_{m,n-1}}{(\Delta x)^2}+\frac{f_{m+1,n}-2f_{m,n}+f_{m-1,n}}{(\Delta y)^2}
+\end{equation}
+which, as we are only concerned with an evenly spaced grid ($\Delta x = \Delta y \equiv \Delta$), becomes
+\begin{equation}
+\mbox{nD}^2(f_{m,n})=\frac{f_{m,n+1}+f_{m,n-1}+f_{m+1,n}+f_{m-1,n}-4f_{m,n}}{\Delta^2}
+\end{equation}
+
+Now, we consider Laplace's Equation $\nabla^2 \phi = 0$ and replace the Laplacian with our second numerical derivative. This gives us
+\begin{equation}
+\mbox{nD}^2(\phi_{m,n}) = \frac{\phi_{m,n+1}+\phi_{m,n-1}+\phi_{m+1,n}+\phi_{m-1,n}-4\phi_{m,n}}{\Delta^2}=0
+\end{equation}
+\begin{equation} \label{phimn}
+\Rightarrow \phi_{m,n}=\frac{1}{4}(\phi_{m,n+1}+\phi_{m,n-1}+\phi_{m+1,n}+\phi_{m-1,n}).
+\end{equation}
+
+It follows that Laplace's Equation is numerically satisfied for a function $\phi$ over an a$\times$b grid when, at each point, $\phi$ takes the average of its value at the 4 directly neighboring grid points. Given the boundary conditions of the grid (i.e. the value of $\phi_{m,n}$ is known for all points along the edges of the grid $\phi_{m,0},\phi_{m,b},\phi_{0,n},\phi_{a,n}$ for m=0,1,...,a and n=0,1,...,b), Eq. \ref{phimn} generates a solvable system of equations for all the points in the interior of the grid.
+
+One way of solving this system on a grid is to iteratively solve every point and update the points in a symmetric fashion and then iterate the whole process, which approaches arbitrarily close to the solution. That is, for an a$\times$b grid with boundary conditions given along the grid, we can first set all the interior points in the grid to 0. Then, we take the largest rectangle that fits within the boundary and compute Eq. \ref{phimn} for each of those points using the previous grid's values such that we update all of the values along that rectangle \emph{together}. This way, no iteration of Eq. \ref{phimn} uses any values computed in the same iteration step. We continue this process for progressively smaller rectangles approaching the center of the grid symmetrically.
+
+Now, we must iterate that entire iterative process. As this metaiterative count approaches infinity, our grid values approach the solution. We can set an iteration-tolerance so that the process is repeated until the successive changes to the grid values are all within the tolerance.
+
+
+\end{document}
