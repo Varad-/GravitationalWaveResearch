@@ -2,23 +2,25 @@
 """
 @author: Varadarajan Srinivasan
 
-Photon gravity wave interaction
+(2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave for the special case that 
+the gravitational wave is perpendicular to the plane.
 """
+
 import numpy as np
 import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as anim
 
-def TwoDimRotConj(M,theta):
+def TwoDimRotConj(Q,angle):
     """
-    Takes a matrix M and returns RMR^-1 where R is the rotation matrix for a given angle theta. Since R is orthogonal, R^-1=R^trans
+    Takes a matrix Q and returns RQR^-1 where R is the rotation matrix for the given angle. Since R is orthogonal, R^-1=R^transpose
     """
     R=np.zeros((2,2))
-    R[0,0]=np.cos(theta)
-    R[0,1]=-np.sin(theta)
-    R[1,0]=np.sin(theta)
-    R[1,1]=np.cos(theta)    
-    return R.dot(M).dot(R.T)
+    R[0,0]=np.cos(angle)
+    R[0,1]=-np.sin(angle)
+    R[1,0]=np.sin(angle)
+    R[1,1]=np.cos(angle)
+    return R.dot(Q).dot(R.T)
 
 def delnDxSlice(tslice):
     """
@@ -73,28 +75,28 @@ def initialSlices(rows, cols, ts):
 
 """
 -----------------------parameters-----------------------
-k is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
-method to successfully approximate a solution to the wave equation, k must be less than 1. The accompanying documentation file explains 
-what k means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower k is, the more "frames" are 
+K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
+method to successfully approximate a solution to the wave equation, K must be less than 1. The accompanying documentation file explains 
+what K means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower K is, the more "frames" are 
 computed for a given wave period. The way this program is built, the time-resolution gained by lowering k does not change the runtime. 
-Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher k 
-means the delta t between time-slices is higher (k is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
-further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high k 
-will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended k is 0.1 to 0.4.
+Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher K 
+means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
+further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
+will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
 tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=400
 colcnt=400
 
-eps=0.01 #meaning of epsilon is in the documentation
-theta=np.pi/2
-k=0.25 #k=(waveSpeed*dt/dx)**2
+eps=0.3 #meaning of epsilon is in the documentation
+kg=0.02 #this is the k_grav from cos(kz-kt)
+K=0.25 #K=(waveSpeed*dt/dx)**2
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
 print '\nThese fully adjustable parameters are currently set as:'
 print ' Number of rows = rowcnt = %d\n Number of columns = colcnt = %d\n Number of time slices = tstepcnt = %d' %(rowcnt,colcnt,tstepcnt)
-print ' waveSpeed^2 (delta t / delta x)^2 = k =',k,'   [!Read docstrings and accompanying documentation before changing k!]'
+print ' waveSpeed^2 (delta t / delta x)^2 = K =',K,'   [!Read docstrings and accompanying documentation before changing K!]'
 
 u=initialSlices(rowcnt,colcnt,tstepcnt)
 print 'Computing...'
@@ -102,15 +104,13 @@ print 'Computing...'
 See documentation for the derivations of the following equations and the meaning of these variable names
 """
 for t in range(2,tstepcnt):
-    #?z=?
-    f=eps*np.cos(k*z-k*t)
-    #?and rotate the z...?
+    f=eps*np.cos(kg*t) #f=eps*np.cos(kg*z-kg*t) where z=0
     M=np.zeros((2,2))
     M[0,0]=1+f
     M[1,1]=1-f
-    T=TwoDimRotConj(M,theta)
+    T=TwoDimRotConj(M,np.pi/2)
     delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
-    u[:,:,t]=k*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
+    u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
