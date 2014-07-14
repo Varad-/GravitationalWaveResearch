@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{fullpage}
+\begin{document}
+\flushleft{
+{\large Discretizing and Numerically Solving the Wave Equation: documentation for WaveEquationOptimized.py, PhotonGravityWavePerpendicularCase.py, and PhotonGravityWave4D.py}
+
+\smallskip
+Varadarajan Srinivasan
+\bigskip
+
+For a function $f(x)$ whose discretization is represented as a sequence $f_n$, we define its numerical derivative with respect to $x$, nD$_x(f_n)$, as the average of the forward difference and backward difference.
+\begin{equation} \label{1st deriv 1d}
+\mbox{nD}_x(f_n)=\frac{1}{2}\left(\frac{f_{n}-f_{n-1}}{\Delta x}+\frac{f_{n+1}-f_n}{\Delta x}\right)=\frac{f_{n+1}-f_{n-1}}{2\Delta x}
+\end{equation}
+For differentiable functions, this approximates the true derivative of the function to an arbitrarily high accuracy as the step size $\Delta x \rightarrow 0$. As explained in DiscretizedLaplaceEquation.pdf, this logically produces the one-dimensional numerical second derivative $\mbox{nD}_x^2(f_n)$ as well as the numerical Laplacian nD$_{x,y}^2(f_{m,n})$ for our evenly spaced grid ($\Delta x = \Delta y \equiv \Delta$).
+\begin{equation} \label{2nd deriv 1d}
+\mbox{nD}_x^2(f_n)=\mbox{nD}(\mbox{nD}(f_n))=\frac{f_{n+1}-2f_{n}+f_{n-1}}{\Delta^2}
+\end{equation}
+\begin{equation} \label{Laplacian}
+\mbox{nD}_{x,y}^2(f_{m,n})=\frac{f_{m,n+1}+f_{m,n-1}+f_{m+1,n}+f_{m-1,n}-4f_{m,n}}{\Delta^2}
+\end{equation}
+The Wave Equation for displacement $f$,
+\begin{equation} \label{wave equation}
+\frac{\partial^2f}{\partial t^2}=c^2\nabla^2f,
+\end{equation}
+can be numerically approximated using our discretizations as
+\begin{equation} \label{wave discr}
+\mbox{nD}_t^2(f_{m,n,t})=c^2\mbox{nD}_{x,y}^2(f_{m,n,t}).
+\end{equation}
+Substituting Eq. \ref{2nd deriv 1d} and Eq. \ref{Laplacian} into Eq. \ref{wave discr} gives us
+\begin{equation}
+\frac{f_{m,n,t+1}-2f_{m,n,t}+f_{m,n,t-1}}{(\Delta t)^2}=\frac{c^2}{\Delta^2}(f_{m,n+1,t}+f_{m,n-1,t}+f_{m+1,n,t}+f_{m-1,n,t}-4f_{m,n,t})
+\end{equation}
+Rearranging and subtracting one time step from every term gives us the desired iterative formula that solves the wave equation for given boundary conditions
+\begin{equation} \label{wave eqn solution}
+f_{m,n,t}=K(f_{m,n+1,t-1}+f_{m,n-1,t-1}+f_{m+1,n,t-1}+f_{m-1,n,t-1}-4f_{m,n,t-1})+2f_{m,n,t-1}-f_{m,n,t-2}
+\end{equation}
+where
+\begin{equation}
+K=c^2\frac{(\Delta t)^2}{\Delta^2}
+\end{equation}
+\end{document}
