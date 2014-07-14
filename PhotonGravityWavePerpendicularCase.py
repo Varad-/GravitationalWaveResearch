@@ -78,14 +78,19 @@ rowcnt=400
 colcnt=400
 
 eps=0.3 #meaning of epsilon is in the documentation
-kg=0.02 #this is the k_grav from cos(kz-kt)
-K=0.25 #K=(waveSpeed*dt/dx)**2
+kgrav=0.02 #this is the k_grav from cos(kz-kt)
+K=0.25 #K=(waveSpeed*dt/dx)**2, must be well below 1.
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
-print '\nThese fully adjustable parameters are currently set as:'
-print ' Number of rows = rowcnt = %d\n Number of columns = colcnt = %d\n Number of time slices = tstepcnt = %d' %(rowcnt,colcnt,tstepcnt)
-print ' waveSpeed^2 (delta t / delta x)^2 = K =',K,'   [!Read docstrings and accompanying documentation before changing K!]'
+print '\nThese are the values currently set for the fully adjustable parameters:'
+
+print '\n Computational parameters'
+print '  Number of rows: rowcnt = %d\n  Number of columns: colcnt = %d\n  Number of time slices: tstepcnt = %d' %(rowcnt,colcnt,tstepcnt)
+print '  (waveSpeed * delta t / delta x)^2: K =',K,' [!Read docstrings and accompanying documentation before changing K!]'
+
+print '\n Physical parameters in f=epsilon*cos(kz-kt)'
+print '  epsilon: eps =',eps,'\n  k: kgrav =',kgrav
 
 u=initialSlices(rowcnt,colcnt,tstepcnt)
 print 'Computing...'
@@ -93,7 +98,7 @@ print 'Computing...'
 See documentation for the derivations of the following equations and the meaning of these variable names
 """
 for t in range(2,tstepcnt):
-    f=eps*np.cos(kg*t) #f=eps*np.cos(kg*z-kg*t) where z=0
+    f=eps*np.cos(kgrav*t) #f=eps*np.cos(kgrav*z-kgrav*t) where z=0
     M=np.zeros((2,2))
     M[0,0]=1+f
     M[1,1]=1-f
