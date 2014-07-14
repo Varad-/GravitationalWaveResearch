@@ -102,7 +102,7 @@ for t in range(2,tstepcnt):
     M=np.zeros((2,2))
     M[0,0]=1+f
     M[1,1]=1-f
-    delsquaredLHS=delnDxSlice(M[0,0]*delnDxSlice(u[:,:,t-1])+M[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(M[1,0]*delnDxSlice(u[:,:,t-1])+M[1,1]*delnDySlice(u[:,:,t-1]))
+    delsquaredLHS=delnDxSlice(M[0,0]*delnDxSlice(u[:,:,t-1]))+delnDySlice(M[1,1]*delnDySlice(u[:,:,t-1]))
     u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
