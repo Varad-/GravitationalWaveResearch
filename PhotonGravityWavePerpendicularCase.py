@@ -97,12 +97,10 @@ print 'Computing...'
 """
 See documentation for the derivations of the following equations and the meaning of these variable names
 """
+
 for t in range(2,tstepcnt):
     f=eps*np.cos(kgrav*t) #f=eps*np.cos(kgrav*z-kgrav*t) where z=0
-    M=np.zeros((2,2))
-    M[0,0]=1+f
-    M[1,1]=1-f
-    delsquaredLHS=delnDxSlice(M[0,0]*delnDxSlice(u[:,:,t-1]))+delnDySlice(M[1,1]*delnDySlice(u[:,:,t-1]))
+    delsquaredLHS=delnDxSlice((1+f)*delnDxSlice(u[:,:,t-1]))+delnDySlice((1-f)*delnDySlice(u[:,:,t-1]))
     u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
