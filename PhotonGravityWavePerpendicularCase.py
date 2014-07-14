@@ -73,13 +73,13 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=201 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=100
-colcnt=100
+tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+rowcnt=400
+colcnt=400
 
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.5 #K=(waveSpeed*dt/dx)**2, must be well below 1.
+K=0.3 #K=(waveSpeed*dt/dx)**2, must be well below 1.
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
