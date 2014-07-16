@@ -2,8 +2,8 @@
 """
 @author: Varadarajan Srinivasan
 
-(2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave after taking the (3+1)D considerations into 
-account such results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
+Produces a (2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave after taking the (3+1)D considerations 
+into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
 """
 
 import numpy as np
