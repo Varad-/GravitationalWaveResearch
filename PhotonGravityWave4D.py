@@ -2,8 +2,8 @@
 """
 @author: Varadarajan Srinivasan
 
-(2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave for the special case that 
-the gravitational wave is perpendicular to the plane.
+(2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave after taking the (3+1)D considerations into 
+account such results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
 """
 
 import numpy as np
@@ -87,10 +87,10 @@ further into the future, but with a lower accuracy. Unlike evaluating an analyti
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
 tstepcnt=151 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=150
-colcnt=150
+rowcnt=60
+colcnt=70
 
-theta = np.pi/6 #angle of incidence of grav wave
+theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
 K=0.25 #K=(c*dt/dx)**2
@@ -121,8 +121,8 @@ M=np.zeros((2,2))
 delsquaredLHS=np.zeros((rowcnt,colcnt))
 for t in range(2,tstepcnt):
     for row in range(0,rowcnt):
-        z=-row*np.sin(theta) #this is the z inverse rotation about X. see documentation for how it becomes z=-Ysin(theta)
-        f=eps*np.cos(kgrav*(z-c*t))
+        zprime=-row*np.sin(theta) #this is the zprime inverse rotation about x. see documentation for how it becomes zprime=-y*sin(theta)
+        f=eps*np.cos(kgrav*(zprime-c*t))
         M[0,0]=1+f
         M[1,1]=1-f
         T=TwoDimRotConj(M,theta)
@@ -131,7 +131,7 @@ for t in range(2,tstepcnt):
 
 """
 M=np.zeros((2,2))
-z=0 #just set wrongly to 0
+z=0 #!!WRONGLY SET TO 0
 for t in range(2,tstepcnt):
     f=eps*np.cos(kgrav*(z-c*t))
     M[0,0]=1+f
