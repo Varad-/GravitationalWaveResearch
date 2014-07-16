@@ -54,5 +54,5 @@ which, for our method, becomes
 \begin{equation} \label{CFL our case}
 \frac{\Delta t}{\Delta}(c_x+c_y)\leq 1
 \end{equation}
-This of course is consistent with Eq. \ref{K<=1} by the Triangle Inequality. Note that even our more restricted condition Eq. \ref{CFL our case} is not necessarily a sufficient one. However, the results of the method become obviously nonsensical when the condition to ensure stability is not met and so we need not derive it. Running several tests makes it clear that $K\leq 0.5$ is comfortably sufficient for our purposes with $0.1\leq K\leq 0.4$ being a good, compromising range. Lower values of K produce more accurate results, but are algorithmically slower.
+This of course is consistent with Ineq. \ref{K<=1} by the Triangle Inequality. Note that even our more restricted condition Ineq. \ref{CFL our case} is not necessarily a sufficient one. However, the results of the method become obviously nonsensical when the condition to ensure stability is not met and so we need not derive it. Running several tests makes it clear that $K\leq 0.5$ is comfortably sufficient for our purposes with $0.1\leq K\leq 0.4$ being a good, compromising range. Lower values of K produce more accurate results, but are algorithmically slower.
 \end{document}
