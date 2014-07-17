@@ -3,7 +3,7 @@
 \usepackage{fullpage}
 \begin{document}
 \flushleft{
-{\large Discretizing and Numerically Solving the Wave Equation: documentation for WaveEquationOptimized.py, PhotonGravityWavePerpendicularCase.py, and PhotonGravityWave4D.py}
+{\large Discretizing and Numerically Solving the Wave Equation: the Physics behind WaveEquationInefficient.py and WaveEquationOptimized.py}
 
 \smallskip
 Varadarajan Srinivasan
@@ -34,7 +34,7 @@ Substituting Eq. \ref{2nd deriv 1d} and Eq. \ref{Laplacian} into Eq. \ref{wave d
 \end{equation*}
 Rearranging and subtracting one time step from every term gives us the desired iterative formula that solves the wave equation for given boundary conditions
 \begin{equation} \label{wave eqn solution}
-f_{m,n,t}=K(f_{m,n+1,t-1}+f_{m,n-1,t-1}+f_{m+1,n,t-1}+f_{m-1,n,t-1}-4f_{m,n,t-1})+2f_{m,n,t-1}-f_{m,n,t-2}
+\boxed{f_{m,n,t}=K(f_{m,n+1,t-1}+f_{m,n-1,t-1}+f_{m+1,n,t-1}+f_{m-1,n,t-1}-4f_{m,n,t-1})+2f_{m,n,t-1}-f_{m,n,t-2}}
 \end{equation}
 where
 \begin{equation} \label{K}
@@ -42,11 +42,11 @@ K=c^2\frac{(\Delta t)^2}{\Delta^2}
 \end{equation}
 is a constant which can be thought of as the square of the ratio between the speed of the wave through the plane and the information propagation speed of the numerical method. In each time-step $\Delta t$, Eq. \ref{wave eqn solution} transmits information from a distance of exactly 1 grid point in every direction. This means that the information propagation speed is $c_{i}=\Delta / \Delta t$.
 
-For the numerical method to successfully approximate the wave equation, numerical stability is necessary. That is, the speed of the information propagation throughout our discretization must be no slower than the wave speed $c\leq c_i$. Otherwise, our results will be nonsensical. Noting all these terms are necessarily positive, we see that
+For the numerical method to successfully approximate the wave equation, numerical stability is necessary. That is, the speed of the information propagation throughout our discretization must be no slower than the wave speed $c\leq c_i$. Otherwise, our results will be nonsensical. Noting all these parameters are necessarily positive, we see that
 \begin{equation} \label{K<=1}
 \frac{c}{c_i}\leq 1 \implies \frac{c\Delta t}{\Delta}\leq 1 \implies K\leq 1
 \end{equation}
-is a necessary condition for numerical stability in our method. We can get a more specific (less restrictive) necessary condition by invoking the time-marching (explicit) case of the Courant--Friedrichs--Lewy condition that
+is a necessary condition for numerical stability in our method. We can get a more specific necessary condition by invoking the time-marching (explicit) case of the Courant--Friedrichs--Lewy condition that
 \begin{equation}
 \Delta t\left(\frac{c_x}{\Delta x}+\frac{c_y}{\Delta y}\right)\leq C_{max}=1
 \end{equation}
@@ -54,5 +54,5 @@ which, for our method, becomes
 \begin{equation} \label{CFL our case}
 \frac{\Delta t}{\Delta}(c_x+c_y)\leq 1
 \end{equation}
-This of course is consistent with Ineq. \ref{K<=1} by the Triangle Inequality. Note that even our more restricted condition Ineq. \ref{CFL our case} is not necessarily a sufficient one. However, the results of the method become obviously nonsensical when the condition to ensure stability is not met and so we need not derive it. Running several tests makes it clear that $K\leq 0.5$ is comfortably sufficient for our purposes with $0.1\leq K\leq 0.4$ being a good, compromising range. Lower values of K produce more accurate results, but are algorithmically slower.
+This is of course consistent with Ineq. \ref{K<=1} by the Triangle Inequality. Note that even our more restricted condition Ineq. \ref{CFL our case} is not necessarily a sufficient one. However, the results of the method become obviously nonsensical when the condition to ensure stability is not met and so we need not derive it. Running several tests makes it clear that $K\leq 0.5$ is comfortably sufficient for our purposes with $0.1\leq K\leq 0.4$ being a good compromise. Low values of K produce more accurate results, but are algorithmically slower. Essentially, lowering K increases our time-resolution.
 \end{document}
