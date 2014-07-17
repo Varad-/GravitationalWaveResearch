@@ -77,7 +77,7 @@ tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=400
 colcnt=400
 
-eps=0.3 #meaning of epsilon is in the documentation
+eps=0.4 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
 K=0.3 #K=(waveSpeed*dt/dx)**2, must be well below 1.
 

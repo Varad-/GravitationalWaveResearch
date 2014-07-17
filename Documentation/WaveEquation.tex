@@ -2,12 +2,15 @@
 \usepackage{amsmath}
 \usepackage{fullpage}
 \begin{document}
-\flushleft{
-{\large Discretizing and Numerically Solving the Wave Equation: the Physics behind WaveEquationInefficient.py and WaveEquationOptimized.py}
+\flushleft
+{\large Discretizing and Numerically Solving the Wave Equation}
+
+The Physics behind WaveEquationInefficient.py and WaveEquationOptimized.py
 
 \smallskip
 Varadarajan Srinivasan
 \bigskip
+
 
 For a function $f(x)$ whose discretization is represented as a sequence $f_n$, we define its numerical derivative with respect to $x$, nD$_x(f_n)$, as the average of the forward difference and backward difference.
 \begin{equation} \label{1st deriv 1d}
@@ -20,11 +23,14 @@ For differentiable functions, this approximates the true derivative of the funct
 \begin{equation} \label{Laplacian}
 \mbox{nD}_{x,y}^2(f_{m,n})=\frac{f_{m,n+1}+f_{m,n-1}+f_{m+1,n}+f_{m-1,n}-4f_{m,n}}{\Delta^2}
 \end{equation}
-The Wave Equation for displacement $f$,
+
+\bigskip
+
+Using these discretizations, the Wave Equation for displacement $f$,
 \begin{equation} \label{wave equation}
 \frac{\partial^2f}{\partial t^2}=c^2\nabla^2f,
 \end{equation}
-can be numerically approximated using our discretizations as
+can be numerically approximated as
 \begin{equation} \label{wave discr}
 \mbox{nD}_t^2(f_{m,n,t})=c^2\mbox{nD}_{x,y}^2(f_{m,n,t}).
 \end{equation}
