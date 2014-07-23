@@ -2,7 +2,7 @@
 """
 @author: Varadarajan Srinivasan
 
-Produces a (2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave after taking the (3+1)D considerations 
+Produces a (2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave after taking some (3+1)D considerations 
 into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
 """
 
@@ -13,13 +13,13 @@ import matplotlib.animation as anim
 
 def TwoDimRotConj(Q,angle):
     """
-    Takes a 2x2 matrix Q and returns RQR^-1 where R is the 2x2 rotation matrix for the given angle. Since R is orthogonal, R^-1=R^transpose
+    Takes a 2x2 matrix Q and returns RQR^-1 where R is the 2x2 x-rotation matrix for the given angle. Since R is orthogonal, R^-1=R^transpose
     """
     R=np.zeros((2,2))
 
-    R[0,0]=np.cos(angle)
-    R[0,1]=-np.sin(angle)
-    R[1,0]=np.sin(angle)
+    R[0,0]=1
+    R[0,1]=0
+    R[1,0]=0
     R[1,1]=np.cos(angle)
     
     return R.dot(Q).dot(R.T)
@@ -39,7 +39,7 @@ def delnDySlice(tslice):
     with respect to y (i.e. row index). Note that in the matrix this means the y coordinate points downwards. Derivatives are only evaluated 
     on the interior of the grid. The edges are left as 0.
     """
-    nDy=np.zeros(np.shape(tslice))    
+    nDy=np.zeros(np.shape(tslice))
     nDy[1:-1,1:-1]=0.5*(tslice[2:,1:-1]-tslice[:-2,1:-1])
     return nDy
     
@@ -57,20 +57,18 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-
-def initialSlices(rows, cols, ts):
+def initialSlices(rows, cols, ts, TwoVarFunc):
     """
-    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as a user-inputted function of x and y.
+    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as the function of x and y.
     This is then copied to the t=1 slice as well because 2 initial slices are needed in the discretized wave equation
     and it makes more sense to use the same value instead of having the slice before the boundary to be all 0s because
     that would pollute the discretized representation of the second order PDE with an artificially high rate of change.
     """
     f = np.zeros((rows,cols,ts))
-    t0funcxy = raw_input('\nDefine a function of x and y that sets the t=0 grid (in Python syntax). u(x,y)=')
     print 'Initializing...'
     for row in range(0,rows):
         for col in range(0,cols):
-            f[row,col,0]=evalFuncOfxyAtVal(t0funcxy,row,col)
+            f[row,col,0]=evalFuncOfxyAtVal(TwoVarFunc,row,col)
     
     f[:,:,1]=f[:,:,0]
     return f
@@ -90,11 +88,11 @@ tstepcnt=151 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=60
 colcnt=70
 
+t0funcxy = 'np.exp(-((x-colcnt/2)**2/(colcnt/20)+(y-rowcnt/2)**2/(rowcnt/20)))' #(string) function of x and y that initializes the starting time slices
 theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
 K=0.25 #K=(c*dt/dx)**2
-
 c=1 #c=1 for units of the wave speed
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
@@ -110,24 +108,30 @@ print '  Incident angle of gravitational wave: theta =',theta
 print '  In f=epsilon*cos(kz-kt),'
 print '    epsilon: eps =',eps,'\n    k: kgrav =',kgrav
 print '  Speed of electromagnetic wave: c =',c
+print '  Function of x and y that sets the initial conditions:',t0funcxy
 
-u=initialSlices(rowcnt,colcnt,tstepcnt)
+u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy)
 
 print 'Computing...'
 """
-See documentation for the derivations of the following equations and the meaning of these variable names
+See documentation for the derivations of the following equations and the meaning of these variable names.
+I have also subtracted one time step from every term since it makes more sense in this programming context.
 """
-M=np.zeros((2,2))
 delsquaredLHS=np.zeros((rowcnt,colcnt))
+
+zprime=np.zeros((rowcnt,colcnt))
+for row in range(0,rowcnt):
+    zprime[row,:]=-row*np.sin(theta) #this is the zprime inverse rotation about x. see documentation for how it becomes zprime=-y*sin(theta)
+
+coszArray=np.cos(kgrav*zprime)
+sinzArray=np.sin(kgrav*zprime)
 for t in range(2,tstepcnt):
-    for row in range(0,rowcnt):
-        zprime=-row*np.sin(theta) #this is the zprime inverse rotation about x. see documentation for how it becomes zprime=-y*sin(theta)
-        f=eps*np.cos(kgrav*(zprime-c*t))
-        M[0,0]=1+f
-        M[1,1]=1-f
-        T=TwoDimRotConj(M,theta)
-        delsquaredLHS[row,:]=(delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1])))[row,:]
-    u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
+    f=eps*(coszArray*np.cos(kgrav*c*t)+sinzArray*np.sin(kgrav*c*t))
+    M[0,0]=1+f
+    M[1,1]=1-f
+    T=TwoDimRotConj(M,theta)
+    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
+u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 M=np.zeros((2,2))

@@ -44,20 +44,18 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-
-def initialSlices(rows, cols, ts):
+def initialSlices(rows, cols, ts, TwoVarFunc):
     """
-    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as a user-inputted function of x and y.
+    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as the function of x and y.
     This is then copied to the t=1 slice as well because 2 initial slices are needed in the discretized wave equation
     and it makes more sense to use the same value instead of having the slice before the boundary to be all 0s because
     that would pollute the discretized representation of the second order PDE with an artificially high rate of change.
     """
     f = np.zeros((rows,cols,ts))
-    t0funcxy = raw_input('\nDefine a function of x and y that sets the t=0 grid (in Python syntax). u(x,y)=')
     print 'Initializing...'
     for row in range(0,rows):
         for col in range(0,cols):
-            f[row,col,0]=evalFuncOfxyAtVal(t0funcxy,row,col)
+            f[row,col,0]=evalFuncOfxyAtVal(TwoVarFunc,row,col)
     
     f[:,:,1]=f[:,:,0]
     return f
@@ -73,11 +71,12 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=400
-colcnt=400
+tstepcnt=901 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+rowcnt=300
+colcnt=300
 
-eps=0.4 #meaning of epsilon is in the documentation
+t0funcxy = 'np.exp(-((x-colcnt/2)**2/(colcnt/20)+(y-rowcnt/2)**2/(rowcnt/20)))' #(string) function of x and y that initializes the starting time slices
+eps=0.4 #meaning of epsilon is in the documentation,  must be <1?
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
 K=0.3 #K=(waveSpeed*dt/dx)**2, must be well below 1.
 
@@ -91,11 +90,14 @@ print '  (waveSpeed * delta t / delta x)^2: K =',K,' [!Read docstrings and accom
 
 print '\n Physical parameters in f=epsilon*cos(kz-kt)'
 print '  epsilon: eps =',eps,'\n  k: kgrav =',kgrav
+print '  Function of x and y that sets the initial conditions:',t0funcxy
 
-u=initialSlices(rowcnt,colcnt,tstepcnt)
+u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy)
+
 print 'Computing...'
 """
-See documentation for the derivations of the following equations and the meaning of these variable names
+See documentation for the derivations of the following equations and the meaning of these variable names.
+I have also subtracted one time step from every term since it makes more sense in this programming context.
 """
 
 for t in range(2,tstepcnt):

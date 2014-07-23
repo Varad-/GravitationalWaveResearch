@@ -4,7 +4,7 @@
 \begin{flushleft}
 {\large Building a Numerical Model of the Influence of a Gravitational Wave on an Electromagnetic Wave}
 
-The Physics behind PhotonGravityWavePerpendicularCase.py and PhotonGravityWave4D.py
+The Physics behind PhotonGravityWavePerpendicularCase.py and PhotonGravityWave(2+1)-D.py
 
 \smallskip
 Varadarajan Srinivasan
@@ -51,19 +51,19 @@ z\prime
 LHS &= \begin{pmatrix}\partial_{x\prime} & \partial_{y\prime} & \partial_{z\prime}\end{pmatrix} 
 \textbf{R}^{-1}\textbf{R} \  \textbf{M} \ \textbf{R}^{-1}\textbf{R}
 \begin{pmatrix} \partial_{x\prime} \\ \partial_{y\prime} \\ \partial_{z\prime} \end{pmatrix}
-u \nonumber
-\\ &= \begin{pmatrix}\partial_X & \partial_Y & \partial_Z\end{pmatrix}
+u \nonumber \\
+&= \begin{pmatrix}\partial_X & \partial_Y & \partial_Z\end{pmatrix}
 \textbf{R} \  \textbf{M} \ \textbf{R}^{-1}
 \begin{pmatrix} \partial_X \\ \partial_Y \\ \partial_Z \end{pmatrix}
 u. \label{LHS}
 \end{align}
 Let us define another tensor $\textbf{T}\equiv\textbf{RMR}^{-1}$, the conjugate of $\textbf{M}$ by rotation. We can always define $\langle X,Y,Z\rangle$ with respect to the incoming gravitational wave such that the only rotation we need to do is about $x\prime$.\footnote{We are actually rotating about $z\prime$, then $x\prime$, and finally about the new $z\prime$, but the roll rotations do not change anything. So, those Euler angles do not enter our process.} Thus, for an angle of incidence of $\theta$,\footnote{Note that $\theta$ is defined clockwise when viewed from above the YZ plane because our coordinate system is left-handed.}
-\begin{equation*}
+\begin{equation} \label{T}
 \textbf{T}=
 \begin{pmatrix}
 1 & 0 & 0 \\
-0 & \cos(\theta) & -\sin(\theta) \\
-0 & \sin(\theta) & \cos(\theta)
+0 & \cos\theta & -\sin\theta \\
+0 & \sin\theta & \cos\theta
 \end{pmatrix}
 \begin{pmatrix}
 1+f & 0 & 0 \\
@@ -72,11 +72,11 @@ Let us define another tensor $\textbf{T}\equiv\textbf{RMR}^{-1}$, the conjugate 
 \end{pmatrix}
 \begin{pmatrix}
 1 & 0 & 0 \\
-0 & \cos(\theta) & \sin(\theta) \\
-0 & -\sin(\theta) & \cos(\theta)
+0 & \cos\theta & \sin\theta \\
+0 & -\sin\theta & \cos\theta
 \end{pmatrix}.
-\end{equation*}
-We introduce the parameter $\theta$ to convert between our two coordinate systems as our computations require all terms to be in the $\langle X,Y,Z\rangle$ system, but recall that $f=f(t,z\prime)=\epsilon \cos(kz\prime-kct)$. Solving Eq. \ref{R} for the primed column vector with $\textbf{R}$ as above about $x\prime$,
+\end{equation}
+We have introduced the parameter $\theta$ to convert between our two coordinate systems as our computations require all terms to be in the $\langle X,Y,Z\rangle$ system, but recall that $f=f(t,z\prime)=\epsilon \cos(kz\prime-kct)$. We therefore need to solve Eq. \ref{R} for the primed column vector with $\textbf{R}$ as above about $x\prime$,
 \begin{equation*}
 \begin{pmatrix}
 x\prime \\
@@ -90,20 +90,61 @@ Z
 \end{pmatrix}
 =\begin{pmatrix}
 X \\
-Y\cos(\theta)+Z\sin(\theta) \\
--Y\sin(\theta)+Z\
+Y\cos\theta+Z\sin\theta \\
+-Y\sin\theta+Z\
 \end{pmatrix}.
 \end{equation*}
-Thus, $f=f(t,Y,Z)=\epsilon \cos(k(Z-Y\sin(\theta))-kct)$. This gives us the desired compact form of Eq. \ref{LHS} entirely in our computational coordinate system $\langle X,Y,Z\rangle$,
-\begin{equation*}
-LHS = \nabla^T \textbf{T} \nabla u.
-\end{equation*}
-Hence, we have the (3+1)-dimensional equation for displacement $u(t,X,Y,Z)$ of an electromagnetic field obeying the Wave Equation while interacting with a gravitational wave,
+Thus, \begin{equation} \label{f}
+f=f(t,Y,Z)=\epsilon \cos(k(Z-Y\sin\theta)-kct).
+\end{equation}
+This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing the displacement $u(t,X,Y,Z)$ of an electromagnetic field (or, in fact, anything else obeying Eq. \ref{waveeqn flat}, the Wave Equation) interacting with a gravitational wave,
 \begin{equation}\label{main eqn}
 \boxed{
 \nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{with } f=f(t,Y,Z).
 }
 \end{equation}
 
-To numerical compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that already described in WaveEquation.pdf. Our plane of interest containing the electromagnetic waves is the XY plane and so we need only concern ourselves with the case $f=f(t,Y,0)=\epsilon \cos(kY\sin(\theta)+kct).$
+To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that already described in WaveEquation.pdf. Our plane of interest containing the electromagnetic waves is the XY plane and so we need only concern ourselves with the simplified case of Eq. \ref{f}, $f=f(t,Y,0)=\epsilon \cos(kY\sin\theta+kct).$ We define $m$ and $n$ as the row and column indices, respectively, of our numerical displacement function $u_{m,n,o,t}$. This means that, in our conveniently left-handed system, $m$ and $n$ are the discretized Y- and X-coordinates, respectively. We can also do the same for Z-coordinate (index $o$). Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. For a function $g(t,X,Y,Z)$,
+\begin{align} \label{nDX and nDY}
+\begin{split}
+&\frac{\partial g}{\partial X} \approx \mbox{nD}_X(g_{m,n,o,t})=\frac{g_{m,n+1,o,t}-g_{m,n-1,o,t}}{2\Delta}, \\ 
+&\frac{\partial g}{\partial Y} \approx \mbox{nD}_Y(g_{m,n,o,t})=\frac{g_{m+1,n,o,t}-g_{m-1,n,o,t}}{2\Delta}, \\
+&\text{and similarly for $Z$ (index $o$, step size $\Delta$) and $t$ (index $t$, step size $\Delta t$).}
+\end{split}
+\end{align}
+Using Eq. \ref{T}, the left hand side of our final result, Eq. \ref{main eqn}, is expanded as
+\begin{align} \label{expanded LHS}
+LHS &=
+\nabla^T \begin{pmatrix}
+1+f & 0 & 0 \\
+0 & 1-f\cos^2\theta & -f\cos\theta\sin\theta \\
+0 & -f\cos\theta\sin\theta & 1-f\sin^2\theta
+\end{pmatrix} \nabla u \nonumber \\
+&=
+\frac{\partial}{\partial X}\left((1+f)\frac{\partial u}{\partial X}\right)+\frac{\partial}{\partial Y}\left((1-f\cos^2\theta)\frac{\partial u}{\partial Y}-f\cos\theta\sin\theta\ \frac{\partial u}{\partial Z} \right)\\ 
+&\qquad+\frac{\partial}{\partial Z}\left(-f\cos\theta\sin\theta\ \frac{\partial u}{\partial Y} + (1-f\sin^2\theta)\frac{\partial u}{\partial Z}\right) \nonumber
+\end{align}
+We can directly apply Eqs. \ref{nDX and nDY} to discretize this. For later convenience, let us also multiply Eqs. \ref{nDX and nDY} by the spatial step size $\Delta$ and multiply the discretized form of Eq. \ref{expanded LHS} by $\Delta^2$. This allows us to put $LHS$ in terms of two functions, $\Delta\cdot\mbox{nD}_X$ and $\Delta\cdot\mbox{nD}_Y$, which are independent of parameters.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.}
+\begin{align} \label{delsqrLHS}
+\Delta^2 &\cdot LHS_{discr} = \Delta\cdot\mbox{nD}_X\big((1+f)\Delta\cdot\mbox{nD}_X(u_{m,n,o,t})\big) \\
++&\Delta \cdot\mbox{nD}_Y\big((1-f\cos^2\theta)\Delta\cdot\mbox{nD}_Y(u_{m,n,o,t})-f\cos\theta\sin\theta\Delta\cdot\mbox{nD}_Z(u_{m,n,o,t}) \big) \nonumber \\
++&\Delta \cdot\mbox{nD}_Z\big(-f\cos\theta\sin\theta\Delta\cdot\mbox{nD}_Y(u_{m,n,o,t}) + (1-f\sin^2\theta)\Delta\cdot\mbox{nD}_Z(u_{m,n,o,t})\big) \nonumber
+\end{align}
+The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS_{discr}$ gives us the fully discretized form of Eq. \ref{main eqn},
+\begin{equation} \label{discr1}
+\frac{1}{\Delta^2}\ \Delta^2 \cdot LHS_{discr} = \frac{1}{c^2}\ \mbox{nD}_t(\mbox{nD}_t(u_{m,n,o,t})).
+\end{equation}
+Applying Eqs. \ref{nDX and nDY} to Eq. \ref{discr1} and collecting parameters on one side, we finally have our desired iterative equation that solves the wave equation in the presence of a gravitational wave.
+\begin{align} \label{discr main eqn}
+\boxed{
+u_{m,n,o,t+1}=\left(c\ \frac{\Delta t}{\Delta}\right)^2 \Delta^2 \cdot LHS_{discr}-u_{m,n,o,t-1}+2u_{m,n,o,t}
+} \\
+\text{with $\Delta^2 \cdot LHS_{discr}$ given by Eq. \ref{delsqrLHS}.} \nonumber
+\end{align}
+Our trick to remove parameters from within the numerical functions allows us to program them independently of parameters while accumulating all the parameters into
+\begin{equation} \label{K}
+K\equiv\left(c\ \frac{\Delta t}{\Delta}\right)^2=\left(\frac{c}{c_i}\right)^2
+\end{equation}
+that we discussed in detail in WaveEquation.pdf. Its constraint conditions apply here as well.
 \end{document}
+

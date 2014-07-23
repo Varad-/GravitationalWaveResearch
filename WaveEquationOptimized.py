@@ -23,20 +23,18 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-
-def initialSlices(rows, cols, ts):
+def initialSlices(rows, cols, ts, TwoVarFunc):
     """
-    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as a user-inputted function of x and y.
+    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as the function of x and y.
     This is then copied to the t=1 slice as well because 2 initial slices are needed in the discretized wave equation
     and it makes more sense to use the same value instead of having the slice before the boundary to be all 0s because
     that would pollute the discretized representation of the second order PDE with an artificially high rate of change.
     """
     f = np.zeros((rows,cols,ts))
-    t0funcxy = raw_input('\nDefine a function of x and y that sets the t=0 grid (in Python syntax). u(x,y)=')
     print 'Initializing...'
     for row in range(0,rows):
         for col in range(0,cols):
-            f[row,col,0]=evalFuncOfxyAtVal(t0funcxy,row,col)
+            f[row,col,0]=evalFuncOfxyAtVal(TwoVarFunc,row,col)
     
     f[:,:,1]=f[:,:,0]
     return f
@@ -65,6 +63,7 @@ tstepcnt=801 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=400
 colcnt=400
 
+t0funcxy = 'np.exp(-((x-colcnt/2)**2/(colcnt/20)+(y-rowcnt/2)**2/(rowcnt/20)))' #string representing a function of x and y that initializes the starting time slices
 k=0.25 #k=(waveSpeed*dt/dx)**2
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
@@ -73,8 +72,9 @@ print '\nThese fully adjustable parameters are currently set as:'
 print ' edgeType =',edgeType
 print ' Number of rows = rowcnt = %d\n Number of columns = colcnt = %d\n Number of time slices = tstepcnt = %d' %(rowcnt,colcnt,tstepcnt)
 print ' waveSpeed^2 (dt/dx)^2 = k =',k,'   [!Read docstrings and accompanying documentation before changing k!]'
+print ' Function of x and y that sets the initial conditions:',t0funcxy
 
-u=initialSlices(rowcnt,colcnt,tstepcnt)
+u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy)
 print 'Computing...'
 
 """
