@@ -121,7 +121,7 @@ delsquaredLHS=np.zeros((rowcnt,colcnt))
 
 zprime=np.zeros((rowcnt,colcnt))
 for row in range(0,rowcnt):
-    zprime[row,:]=-row*np.sin(theta) #this is the zprime inverse rotation about x. see documentation for how it becomes zprime=-y*sin(theta)
+    #this is the zprime inverse rotation about x for our XY plane (Z=0)
 
 coszArray=np.cos(kgrav*zprime)
 sinzArray=np.sin(kgrav*zprime)

@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{amsmath}
+\usepackage{amsmath,scalefnt,fullpage}
 \begin{document}
 \begin{flushleft}
 {\large Building a Numerical Model of the Influence of a Gravitational Wave on an Electromagnetic Wave}
@@ -57,24 +57,29 @@ u \nonumber \\
 \begin{pmatrix} \partial_X \\ \partial_Y \\ \partial_Z \end{pmatrix}
 u. \label{LHS}
 \end{align}
-Let us define another tensor $\textbf{T}\equiv\textbf{RMR}^{-1}$, the conjugate of $\textbf{M}$ by rotation. We can always define $\langle X,Y,Z\rangle$ with respect to the incoming gravitational wave such that the only rotation we need to do is about $x\prime$.\footnote{We are actually rotating about $z\prime$, then $x\prime$, and finally about the new $z\prime$, but the roll rotations do not change anything. So, those Euler angles do not enter our process.} Thus, for an angle of incidence of $\theta$,\footnote{Note that $\theta$ is defined clockwise when viewed from above the YZ plane because our coordinate system is left-handed.}
+Let us define another tensor $\textbf{T}\equiv\textbf{RMR}^{-1}$, the conjugate of $\textbf{M}$ by rotation. We can characterize the rotation required to go from the gravitational wave coordinate system to our computational coordinate system as Euler angle rotations about $z\prime,x\prime,z\prime$, but we have enough freedom in our coordinates to be able to always orient our $\langle X,Y,Z\rangle$ such that the last roll rotation about the new $z\prime$ axis does nothing. Thus, for an angle of incidence of $\theta$,\footnote{Note that $\theta$ is defined clockwise when viewed from above the YZ plane because our coordinate system is left-handed.}
+\begin{equation} \label{R explicit}
+\textbf{R}=
+\textbf{R}_{z\prime}\textbf{R}_{x\prime}
+=
+\left(
+\begin{array}{ccc}
+ \cos (\theta ) & -\cos (\theta ) \sin (\theta ) & \sin ^2(\theta ) \\
+ \sin (\theta ) & \cos ^2(\theta ) & -\cos (\theta ) \sin (\theta ) \\
+ 0 & \sin (\theta ) & \cos (\theta ) \\
+\end{array}
+\right)
+\end{equation}
+and hence
 \begin{equation} \label{T}
 \textbf{T}=
 \begin{pmatrix}
-1 & 0 & 0 \\
-0 & \cos\theta & -\sin\theta \\
-0 & \sin\theta & \cos\theta
+ \frac{1}{8} (4 f \cos (2 \theta )+f \cos (4 \theta )+3 f+8) & \frac{1}{8} f (6 \sin (2 \theta )+\sin (4 \theta ))
+   & f \sin ^2(\theta ) \cos (\theta ) \\
+ \frac{1}{8} f (6 \sin (2 \theta )+\sin (4 \theta )) & \frac{1}{8} (-8 f \cos (2 \theta )-f \cos (4 \theta )+f+8)
+   & -f \sin (\theta ) \cos ^2(\theta ) \\
+ f \sin ^2(\theta ) \cos (\theta ) & -f \sin (\theta ) \cos ^2(\theta ) & \frac{1}{2} (f \cos (2 \theta )-f+2) \\
 \end{pmatrix}
-\begin{pmatrix}
-1+f & 0 & 0 \\
-0 & 1-f & 0 \\
-0 & 0 & 1
-\end{pmatrix}
-\begin{pmatrix}
-1 & 0 & 0 \\
-0 & \cos\theta & \sin\theta \\
-0 & -\sin\theta & \cos\theta
-\end{pmatrix}.
 \end{equation}
 We have introduced the parameter $\theta$ to convert between our two coordinate systems as our computations require all terms to be in the $\langle X,Y,Z\rangle$ system, but recall that $f=f(t,z\prime)=\epsilon \cos(kz\prime-kct)$. We therefore need to solve Eq. \ref{R} for the primed column vector with $\textbf{R}$ as above about $x\prime$,
 \begin{equation*}
@@ -88,23 +93,26 @@ X \\
 Y \\
 Z
 \end{pmatrix}
-=\begin{pmatrix}
-X \\
-Y\cos\theta+Z\sin\theta \\
--Y\sin\theta+Z\
-\end{pmatrix}.
+=
+\left(
+\begin{array}{c}
+ X \cos (\theta )+Y \sin (\theta ) \\
+ \frac{1}{2} (-X \sin (2 \theta )+Y \cos (2 \theta )+2 Z \sin (\theta )+Y) \\
+ X \sin ^2(\theta )+\cos (\theta ) (Z-Y \sin (\theta )) \\
+\end{array}
+\right)
 \end{equation*}
 Thus, \begin{equation} \label{f}
-f=f(t,Y,Z)=\epsilon \cos(k(Z-Y\sin\theta)-kct).
+f=f(t,X,Y,Z)=\epsilon \cos\big(k\big(X \sin ^2(\theta )+\cos (\theta ) \big(Z-Y \sin (\theta )\big)-ct\big)\big).
 \end{equation}
 This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing the displacement $u(t,X,Y,Z)$ of an electromagnetic field (or, in fact, anything else obeying Eq. \ref{waveeqn flat}, the Wave Equation) interacting with a gravitational wave,
 \begin{equation}\label{main eqn}
 \boxed{
-\nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{with } f=f(t,Y,Z).
+\nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{with } f=f(t,X,Y,Z).
 }
 \end{equation}
 
-To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that already described in WaveEquation.pdf. Our plane of interest containing the electromagnetic waves is the XY plane and so we need only concern ourselves with the simplified case of Eq. \ref{f}, $f=f(t,Y,0)=\epsilon \cos(kY\sin\theta+kct).$ We define $m$ and $n$ as the row and column indices, respectively, of our numerical displacement function $u_{m,n,o,t}$. This means that, in our conveniently left-handed system, $m$ and $n$ are the discretized Y- and X-coordinates, respectively. We can also do the same for Z-coordinate (index $o$). Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. For a function $g(t,X,Y,Z)$,
+To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that already described in WaveEquation.pdf. Our plane of interest containing the electromagnetic waves is the XY plane and so we need only concern ourselves with the case Eq. \ref{f}, $f=f(t,X,Y,0)=\epsilon \cos\big(k\big(X \sin ^2(\theta )-Y\cos (\theta ) \sin (\theta )-ct\big)\big).$ We define $m,n,o$ as the row, column, and depth indices, respectively, of our numerical displacement function $u_{m,n,o,t}$. This means that, in our conveniently left-handed system, $m,n,o$ are the discretized Y-, X-, and Z-coordinates, respectively. Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. For a function $g(t,X,Y,Z)$,
 \begin{align} \label{nDX and nDY}
 \begin{split}
 &\frac{\partial g}{\partial X} \approx \mbox{nD}_X(g_{m,n,o,t})=\frac{g_{m,n+1,o,t}-g_{m,n-1,o,t}}{2\Delta}, \\ 
@@ -112,7 +120,7 @@ To numerically compute results, we must discretize Eq. \ref{main eqn}. Our proce
 &\text{and similarly for $Z$ (index $o$, step size $\Delta$) and $t$ (index $t$, step size $\Delta t$).}
 \end{split}
 \end{align}
-Using Eq. \ref{T}, the left hand side of our final result, Eq. \ref{main eqn}, is expanded as
+Using Eq. \ref{T}, the left hand side of our final result, Eq. \ref{main eqn}, is expanded as ...............@!!!!!!!!...WRONG:
 \begin{align} \label{expanded LHS}
 LHS &=
 \nabla^T \begin{pmatrix}
