@@ -130,7 +130,7 @@ for t in range(2,tstepcnt):
     M[0,0]=1+f
     M[1,1]=1-f
     T=TwoDimRotConj(M,theta)
-    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
+    delsquaredLHS=....
 u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """

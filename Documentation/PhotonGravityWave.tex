@@ -105,54 +105,51 @@ Z
 Thus, \begin{equation} \label{f}
 f=f(t,X,Y,Z)=\epsilon \cos\big(k\big(X \sin ^2(\theta )+\cos (\theta ) \big(Z-Y \sin (\theta )\big)-ct\big)\big).
 \end{equation}
-This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing the displacement $u(t,X,Y,Z)$ of an electromagnetic field (or, in fact, anything else obeying Eq. \ref{waveeqn flat}, the Wave Equation) interacting with a gravitational wave,
+This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing the displacement $u(t,X,Y,Z)$ of an electromagnetic field (or, in fact, anything else obeying Eq. \ref{waveeqn flat}, the wave equation) interacting with a gravitational wave,
 \begin{equation}\label{main eqn}
 \boxed{
 \nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{with } f=f(t,X,Y,Z).
 }
 \end{equation}
 
-To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that already described in WaveEquation.pdf. Our plane of interest containing the electromagnetic waves is the XY plane and so we need only concern ourselves with the case Eq. \ref{f}, $f=f(t,X,Y,0)=\epsilon \cos\big(k\big(X \sin ^2(\theta )-Y\cos (\theta ) \sin (\theta )-ct\big)\big).$ We define $m,n,o$ as the row, column, and depth indices, respectively, of our numerical displacement function $u_{m,n,o,t}$. This means that, in our conveniently left-handed system, $m,n,o$ are the discretized Y-, X-, and Z-coordinates, respectively. Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. For a function $g(t,X,Y,Z)$,
+To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that described in WaveEquation.pdf. The electromagnetic waves are contained in the XY plane of interest. We therefore need only concern ourselves with the case $f=f(t,X,Y,0)=\epsilon \cos\big(k\big(X \sin ^2(\theta )-Y\cos (\theta ) \sin (\theta )-ct\big)\big).$ We define a numerical displacement function $u_{m,n,o,t}$ where $m,n,o,$ and $t$ are the row, column, depth-step, and time-step indices, respectively. This means that, in our graphically conveniently left-handed system, $m,n,o,$ and $t$ are the discretizations of the Y-, X-, Z-, and t-coordinates, respectively. Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. We define nD such that, for a function $g(t,X,Y,Z)$,
 \begin{align} \label{nDX and nDY}
 \begin{split}
-&\frac{\partial g}{\partial X} \approx \mbox{nD}_X(g_{m,n,o,t})=\frac{g_{m,n+1,o,t}-g_{m,n-1,o,t}}{2\Delta}, \\ 
-&\frac{\partial g}{\partial Y} \approx \mbox{nD}_Y(g_{m,n,o,t})=\frac{g_{m+1,n,o,t}-g_{m-1,n,o,t}}{2\Delta}, \\
+&\mbox{nD}_X(g_{m,n,o,t})\equiv\frac{g_{m,n+1,o,t}-g_{m,n-1,o,t}}{2\Delta} \approx \frac{\partial g}{\partial X}, \\ 
+&\mbox{nD}_Y(g_{m,n,o,t})\equiv\frac{g_{m+1,n,o,t}-g_{m-1,n,o,t}}{2\Delta} \approx \frac{\partial g}{\partial Y}, \\
 &\text{and similarly for $Z$ (index $o$, step size $\Delta$) and $t$ (index $t$, step size $\Delta t$).}
 \end{split}
 \end{align}
-Using Eq. \ref{T}, the left hand side of our final result, Eq. \ref{main eqn}, is expanded as ...............@!!!!!!!!...WRONG:
+Using Eq. \ref{T}, we know that the left hand side of our main result, Eq. \ref{main eqn}, is given by
 \begin{align} \label{expanded LHS}
-LHS &=
-\nabla^T \begin{pmatrix}
-1+f & 0 & 0 \\
-0 & 1-f\cos^2\theta & -f\cos\theta\sin\theta \\
-0 & -f\cos\theta\sin\theta & 1-f\sin^2\theta
-\end{pmatrix} \nabla u \nonumber \\
-&=
-\frac{\partial}{\partial X}\left((1+f)\frac{\partial u}{\partial X}\right)+\frac{\partial}{\partial Y}\left((1-f\cos^2\theta)\frac{\partial u}{\partial Y}-f\cos\theta\sin\theta\ \frac{\partial u}{\partial Z} \right)\\ 
-&\qquad+\frac{\partial}{\partial Z}\left(-f\cos\theta\sin\theta\ \frac{\partial u}{\partial Y} + (1-f\sin^2\theta)\frac{\partial u}{\partial Z}\right) \nonumber
+LHS&=\frac{\partial}{\partial X}\Big[\frac{1}{8} (4 f \cos (2 \theta )+f \cos (4 \theta )+3 f+8) \frac{\partial u}{\partial X}+\frac{1}{8} f (6 \sin (2\theta )+\sin (4 \theta )) \frac{\partial u}{\partial Y}+f \sin ^2(\theta ) \cos (\theta ) \frac{\partial u}{\partial Z}\Big] \nonumber \\
+&+\frac{\partial}{\partial Y}\Big[ \frac{1}{8} f (6 \sin (2 \theta )+\sin (4 \theta )) \frac{\partial u}{\partial X}+\frac{1}{8} (-8 f \cos (2 \theta) -f \cos (4 \theta )+f+8) \frac{\partial u}{\partial Y}-f \sin (\theta ) \cos ^2(\theta ) \frac{\partial u}{\partial Z}\Big] \nonumber \\
+&+\frac{\partial}{\partial Z}\Big[ f \sin ^2(\theta ) \cos (\theta ) \frac{\partial u}{\partial X} -f \sin (\theta ) \cos ^2(\theta ) \frac{\partial u}{\partial Y}+\frac{1}{2} (f \cos (2 \theta )-f+2).
 \end{align}
-We can directly apply Eqs. \ref{nDX and nDY} to discretize this. For later convenience, let us also multiply Eqs. \ref{nDX and nDY} by the spatial step size $\Delta$ and multiply the discretized form of Eq. \ref{expanded LHS} by $\Delta^2$. This allows us to put $LHS$ in terms of two functions, $\Delta\cdot\mbox{nD}_X$ and $\Delta\cdot\mbox{nD}_Y$, which are independent of parameters.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.}
+Now, we apply Eqs. \ref{nDX and nDY} to discretize Eq. \ref{expanded LHS}. For later convenience, let us multiply Eqs. \ref{nDX and nDY} by the spatial step size $\Delta$ and multiply the discretized form of Eq. \ref{expanded LHS} by $\Delta^2$ so as to put $LHS$ in terms of two functions, $\Delta\cdot\mbox{nD}_X$ and $\Delta\cdot\mbox{nD}_Y$, independent of parameters.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} This gives us
 \begin{align} \label{delsqrLHS}
-\Delta^2 &\cdot LHS_{discr} = \Delta\cdot\mbox{nD}_X\big((1+f)\Delta\cdot\mbox{nD}_X(u_{m,n,o,t})\big) \\
-+&\Delta \cdot\mbox{nD}_Y\big((1-f\cos^2\theta)\Delta\cdot\mbox{nD}_Y(u_{m,n,o,t})-f\cos\theta\sin\theta\Delta\cdot\mbox{nD}_Z(u_{m,n,o,t}) \big) \nonumber \\
-+&\Delta \cdot\mbox{nD}_Z\big(-f\cos\theta\sin\theta\Delta\cdot\mbox{nD}_Y(u_{m,n,o,t}) + (1-f\sin^2\theta)\Delta\cdot\mbox{nD}_Z(u_{m,n,o,t})\big) \nonumber
+\Delta^2 \cdot LHS=\Delta\cdot &\text{nD}_X\Big[\frac{1}{8} (4 f \cos (2 \theta )+f \cos (4 \theta )+3 f+8) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
+&+\frac{1}{8} f (6 \sin (2\theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_Y(u_{m,n,o,t})+f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
++\Delta\cdot &\text{nD}_Y\Big[ \frac{1}{8} f (6 \sin (2 \theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
+&+\frac{1}{8} (-8 f \cos (2 \theta) -f \cos (4 \theta )+f+8) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
++\Delta\cdot &\text{nD}_Z\Big[ f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
+&+\frac{1}{2} (f \cos (2 \theta )-f+2) \Delta\cdot\text{nD}_Z(u_{m,n,o,t}) \Big].
 \end{align}
-The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS_{discr}$ gives us the fully discretized form of Eq. \ref{main eqn},
+The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS$ gives us the fully discretized form of Eq. \ref{main eqn},
 \begin{equation} \label{discr1}
-\frac{1}{\Delta^2}\ \Delta^2 \cdot LHS_{discr} = \frac{1}{c^2}\ \mbox{nD}_t(\mbox{nD}_t(u_{m,n,o,t})).
+\frac{1}{\Delta^2}\ \Delta^2 \cdot LHS = \frac{1}{c^2}\ \mbox{nD}_t(\mbox{nD}_t(u_{m,n,o,t})).
 \end{equation}
-Applying Eqs. \ref{nDX and nDY} to Eq. \ref{discr1} and collecting parameters on one side, we finally have our desired iterative equation that solves the wave equation in the presence of a gravitational wave.
+Finally, applying Eqs. \ref{nDX and nDY} to Eq. \ref{discr1} and collecting parameters on one side, we have our desired iterative equation that solves the wave equation in the presence of a gravitational wave.
 \begin{align} \label{discr main eqn}
 \boxed{
-u_{m,n,o,t+1}=\left(c\ \frac{\Delta t}{\Delta}\right)^2 \Delta^2 \cdot LHS_{discr}-u_{m,n,o,t-1}+2u_{m,n,o,t}
+u_{m,n,o,t+1}=\left(c\ \frac{\Delta t}{\Delta}\right)^2 \Delta^2 \cdot LHS+2u_{m,n,o,t}-u_{m,n,o,t-1}
 } \\
-\text{with $\Delta^2 \cdot LHS_{discr}$ given by Eq. \ref{delsqrLHS}.} \nonumber
+\text{with $\Delta^2 \cdot LHS$ given by Eq. \ref{delsqrLHS}.} \nonumber
 \end{align}
-Our trick to remove parameters from within the numerical functions allows us to program them independently of parameters while accumulating all the parameters into
+The manipulation that allowed us to program the numerical partial derivative functions independently of parameters now gives rise to the accumulated parameter
 \begin{equation} \label{K}
-K\equiv\left(c\ \frac{\Delta t}{\Delta}\right)^2=\left(\frac{c}{c_i}\right)^2
+K\equiv\left(c\ \frac{\Delta t}{\Delta}\right)^2.
 \end{equation}
-that we discussed in detail in WaveEquation.pdf. Its constraint conditions apply here as well.
+This is the same $K=c^2/c_i^2$ that we discussed in detail in WaveEquation.pdf. Its constraint conditions apply here as well.
 \end{document}
 
