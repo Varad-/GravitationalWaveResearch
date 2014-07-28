@@ -13,14 +13,15 @@ import matplotlib.animation as anim
 
 def TwoDimRotConj(Q,angle):
     """
-    Takes a 2x2 matrix Q and returns RQR^-1 where R is the 2x2 x-rotation matrix for the given angle. Since R is orthogonal, R^-1=R^transpose
+    Takes a 2x2 matrix Q and returns RQR^-1 where R is the 2x2 matrix for a rotation by the given angle about z' and then about x'.
+    Since R is orthogonal, R^-1=R^transpose
     """
     R=np.zeros((2,2))
 
-    R[0,0]=1
-    R[0,1]=0
-    R[1,0]=0
-    R[1,1]=np.cos(angle)
+    R[0,0]=np.cos(angle)
+    R[0,1]=-np.cos(angle)*np.sin(angle)
+    R[1,0]=np.sin(angle)
+    R[1,1]=np.cos(angle)**2
     
     return R.dot(Q).dot(R.T)
 
@@ -120,8 +121,9 @@ I have also subtracted one time step from every term since it makes more sense i
 delsquaredLHS=np.zeros((rowcnt,colcnt))
 
 zprime=np.zeros((rowcnt,colcnt))
-for row in range(0,rowcnt):
-    #this is the zprime inverse rotation about x for our XY plane (Z=0)
+for row in range(0,rowcnt): #Y
+    for col in range(0,colcnt): #X
+        col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the zprime (inverse rotation of Z for our XY plane Z=0)
 
 coszArray=np.cos(kgrav*zprime)
 sinzArray=np.sin(kgrav*zprime)
@@ -130,20 +132,8 @@ for t in range(2,tstepcnt):
     M[0,0]=1+f
     M[1,1]=1-f
     T=TwoDimRotConj(M,theta)
-    delsquaredLHS=....
-u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
-
-"""
-M=np.zeros((2,2))
-z=0 #!!WRONGLY SET TO 0
-for t in range(2,tstepcnt):
-    f=eps*np.cos(kgrav*(z-c*t))
-    M[0,0]=1+f
-    M[1,1]=1-f
-    T=TwoDimRotConj(M,theta)
     delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
-    u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
-"""
+u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
