@@ -126,7 +126,7 @@ LHS&=\frac{\partial}{\partial X}\Big[\frac{1}{8} (4 f \cos (2 \theta )+f \cos (4
 &+\frac{\partial}{\partial Y}\Big[ \frac{1}{8} f (6 \sin (2 \theta )+\sin (4 \theta )) \frac{\partial u}{\partial X}+\frac{1}{8} (-8 f \cos (2 \theta) -f \cos (4 \theta )+f+8) \frac{\partial u}{\partial Y}-f \sin (\theta ) \cos ^2(\theta ) \frac{\partial u}{\partial Z}\Big] \nonumber \\
 &+\frac{\partial}{\partial Z}\Big[ f \sin ^2(\theta ) \cos (\theta ) \frac{\partial u}{\partial X} -f \sin (\theta ) \cos ^2(\theta ) \frac{\partial u}{\partial Y}+\frac{1}{2} (f \cos (2 \theta )-f+2).
 \end{align}
-Now, we apply Eqs. \ref{nDX and nDY} to discretize Eq. \ref{expanded LHS}. For later convenience, let us multiply Eqs. \ref{nDX and nDY} by the spatial step size $\Delta$ and multiply the discretized form of Eq. \ref{expanded LHS} by $\Delta^2$ so as to put $LHS$ in terms of two functions, $\Delta\cdot\mbox{nD}_X$ and $\Delta\cdot\mbox{nD}_Y$, independent of parameters.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} This gives us
+Now, we discretize Eq. \ref{expanded LHS} in terms of our previously defined numerical derivatives. For later convenience, let us multiply Eqs. \ref{nDX and nDY} by the spatial step size $\Delta$ and multiply the discretized form of Eq. \ref{expanded LHS} by $\Delta^2$ so as to put $LHS$ in terms of two functions, $\Delta\cdot\mbox{nD}_X$ and $\Delta\cdot\mbox{nD}_Y$, independent of parameters. This gives us
 \begin{align} \label{delsqrLHS}
 \Delta^2 \cdot LHS=\Delta\cdot &\text{nD}_X\Big[\frac{1}{8} (4 f \cos (2 \theta )+f \cos (4 \theta )+3 f+8) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
 &+\frac{1}{8} f (6 \sin (2\theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_Y(u_{m,n,o,t})+f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
@@ -134,6 +134,13 @@ Now, we apply Eqs. \ref{nDX and nDY} to discretize Eq. \ref{expanded LHS}. For l
 &+\frac{1}{8} (-8 f \cos (2 \theta) -f \cos (4 \theta )+f+8) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
 +\Delta\cdot &\text{nD}_Z\Big[ f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
 &+\frac{1}{2} (f \cos (2 \theta )-f+2) \Delta\cdot\text{nD}_Z(u_{m,n,o,t}) \Big].
+\end{align}
+Now, we can explicitly write Eq. \ref{delsqrLHS} by applying Eqs. \ref{nDX and nDY} distributively.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} The expressions are now exceedingly long, but below is the (2+1)-dimensional XY slice of the final explicit equation (with the coefficients put back as components of $\textbf{T}$).
+\begin{align} \label{delsqrLHS explicit 2d}
+\Delta^2 \cdot LHS=\frac{1}{4}\Big(&\textbf{T}_{X,X}(u_{m,n+2,t-1}-2u_{m,n,t-1}+u_{m,n-2,t-1}) \nonumber \\
++&\textbf{T}_{X,Y}(u_{m+1,n+1,t-1}-u_{m+1,n-1,t-1}-u_{m-1,n+1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
++&\textbf{T}_{Y,X}(u_{m+1,n+1,t-1}-u_{m-1,n+1,t-1}-u_{m+1,n-1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
++&\textbf{T}_{Y,Y}(u_{m+2,n,t-1}-2u_{m,n,t-1}+u_{m-2,n,t-1})\Big)
 \end{align}
 The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS$ gives us the fully discretized form of Eq. \ref{main eqn},
 \begin{equation} \label{discr1}
