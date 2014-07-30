@@ -11,17 +11,22 @@ import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as anim
 
-def TwoDimRotConj(Q,angle):
+def ThreeDimRotConj(Q,angle):
     """
-    Takes a 2x2 matrix Q and returns RQR^-1 where R is the 2x2 matrix for a rotation by the given angle about z' and then about x'.
+    Takes a 3x3 matrix Q and returns RQR^-1 where R is the 3x3 matrix for a rotation by the given angle about z' and then about x'.
     Since R is orthogonal, R^-1=R^transpose
     """
-    R=np.zeros((2,2))
+    R=np.zeros((3,3))
 
     R[0,0]=np.cos(angle)
     R[0,1]=-np.cos(angle)*np.sin(angle)
+    R[0,2]=np.sin(angle)**2
     R[1,0]=np.sin(angle)
     R[1,1]=np.cos(angle)**2
+    R[1,2]=-np.cos(angle)*np.sin(angle)
+    R[2,0]=0
+    R[2,1]=np.sin(angle)
+    R[2,2]=np.cos(angle)
     
     return R.dot(Q).dot(R.T)
 
@@ -123,7 +128,7 @@ delsquaredLHS=np.zeros((rowcnt,colcnt))
 zprime=np.zeros((rowcnt,colcnt))
 for row in range(0,rowcnt): #Y
     for col in range(0,colcnt): #X
-        col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the zprime (inverse rotation of Z for our XY plane Z=0)
+        zprime[row,col]=col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the zprime (inverse rotation of Z for our XY plane Z=0)
 
 coszArray=np.cos(kgrav*zprime)
 sinzArray=np.sin(kgrav*zprime)
