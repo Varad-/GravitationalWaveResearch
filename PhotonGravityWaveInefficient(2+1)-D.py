@@ -11,10 +11,11 @@ import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as anim
 
-def ThreeDimRotConj(Q,angle):
+def xySliceOf3DRotConj(Q,angle):
     """
-    Takes a 3x3 matrix Q and returns RQR^-1 where R is the 3x3 matrix for a rotation by the given angle about z' and then about x'.
+    Takes a 3x3 matrix Q and computes RQR^-1 where R is the 3x3 matrix for a rotation by the given angle about z' and then about x'.    
     Since R is orthogonal, R^-1=R^transpose
+    Returns the xy slice of RQR^-1    
     """
     R=np.zeros((3,3))
 
@@ -28,27 +29,29 @@ def ThreeDimRotConj(Q,angle):
     R[2,1]=np.sin(angle)
     R[2,2]=np.cos(angle)
     
-    return R.dot(Q).dot(R.T)
+    return (R.dot(Q).dot(R.T))[:-1,:-1]
 
+"""
 def delnDxSlice(tslice):
-    """
+    
     Takes a time slice and returns an evaluated 2d grid of the grid spacing (delta x) times the numerical derivative of f[row][col][time] 
     with respect to x (i.e. column index). Derivatives are only evaluated on the interior of the grid. The edges are left as 0.
-    """
+    
     nDx=np.zeros(np.shape(tslice))    
     nDx[1:-1,1:-1]=0.5*(tslice[1:-1,2:]-tslice[1:-1,:-2])
     return nDx
 
 def delnDySlice(tslice):
-    """
+    
     Takes a time slice and returns an evaluated 2d grid of the grid spacing (delta y) times the numerical derivative of f[row][col][time] 
     with respect to y (i.e. row index). Note that in the matrix this means the y coordinate points downwards. Derivatives are only evaluated 
     on the interior of the grid. The edges are left as 0.
-    """
+    
     nDy=np.zeros(np.shape(tslice))
     nDy[1:-1,1:-1]=0.5*(tslice[2:,1:-1]-tslice[:-2,1:-1])
     return nDy
-    
+"""
+
 def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     Evaluates a mathematical function of 2 variables written as a string in Python syntax in terms of x and y at a specified point (xval,yval). 
@@ -90,11 +93,11 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=60 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=40
-colcnt=45
+tstepcnt=121 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+rowcnt=80
+colcnt=80
 
-t0funcxy = 'np.exp(-((x-colcnt/2)**2/(colcnt/20)+(y-rowcnt/2)**2/(rowcnt/20)))' #(string) function of x and y that initializes the starting time slices
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the starting time slices
 theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
@@ -126,16 +129,19 @@ I have also subtracted one time step from every term since it makes more sense i
 M=np.zeros((3,3))
 M[2,2]=1
 delsquaredLHS=np.zeros((rowcnt,colcnt))
+"""
+leaves the 2 outermost rectangles along the edges as 0 (waves reflect):
+"""
 for t in range(2,tstepcnt):
-    for row in range(0,rowcnt): #Y
-        for col in range(0,colcnt): #X
-            zprime_rowcol=col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #for our XY plane, zprime = inverse rotation of Z eval'd at Z=0
-            f=eps*(np.cos(kgrav*zprime_rowcol-kgrav*c*t))
+    for m in range(2,rowcnt-2): #row indices -> Y
+        for n in range(2,colcnt-2): #column indices -> X
+            zprime=n*np.sin(theta)**2-m*np.cos(theta)*np.sin(theta) #for our XY plane, zprime = inverse rotation of Z eval'd at Z=0
+            f=eps*(np.cos(kgrav*zprime-kgrav*c*t))
             M[0,0]=1+f
             M[1,1]=1-f
-            T=ThreeDimRotConj(M,theta)
-            delsquaredLHS=(delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1])))[row,col]
-            u[row,col,t]=K*delsquaredLHS+2*u[row,col,t-1]-u[row,col,t-2]
+            T=xySliceOf3DRotConj(M,theta)
+            delsquaredLHS=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,0]*(u[m+1,n+1,t-1]-u[m-1,n+1,t-1]-u[m+1,n-1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
+            u[m,n,t]=K*delsquaredLHS+2*u[m,n,t-1]-u[m,n,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
