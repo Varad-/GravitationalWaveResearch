@@ -2,7 +2,7 @@
 """
 @author: Varadarajan Srinivasan
 
-Produces a (2+1)D animation showing a (electromagnetic) wave being influenced by a gravitational wave after taking some (3+1)D considerations 
+Produces a (2+1)D animation showing a (electromagnetic) wave potential being influenced by a gravitational wave after taking some (3+1)D considerations 
 into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
 """
 
@@ -63,20 +63,24 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-def initialSlices(rows, cols, ts, TwoVarFunc):
+def initialSlices(rows, cols, ts, t0, t1):
     """
-    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as the function of x and y.
-    This is then copied to the t=1 slice as well because 2 initial slices are needed in the discretized wave equation
-    and it makes more sense to use the same value instead of having the slice before the boundary to be all 0s because
-    that would pollute the discretized representation of the second order PDE with an artificially high rate of change.
+    Sets initial conditions.
+    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 and t=1 slices as the functions of x and y.
     """
     f = np.zeros((rows,cols,ts))
-    print 'Initializing...'
-    for row in range(0,rows):
-        for col in range(0,cols):
-            f[row,col,0]=evalFuncOfxyAtVal(TwoVarFunc,row,col)
+    if t0==t1: #both cases do the same thing, but if t0==t1, this code runs significantly faster
+        for row in range(0,rows):
+            for col in range(0,cols):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+        f[:,:,1]=f[:,:,0]
     
-    f[:,:,1]=f[:,:,0]
+    else:
+        for row in range(0,rows):
+            for col in range(0,cols):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+                f[row,col,1]=evalFuncOfxyAtVal(t1,row,col)
+    
     return f
 
 """
@@ -94,11 +98,12 @@ tstepcnt=151 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=60
 colcnt=70
 
-t0funcxy = 'np.exp(-((x-colcnt/2)**2/(colcnt/20)+(y-rowcnt/2)**2/(rowcnt/20)))' #(string) function of x and y that initializes the starting time slices
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=1 slice
 theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.25 #K=(c*dt/dx)**2
+K=0.3 #K=(c*dt/dx)**2
 c=1 #c=1 for units of the wave speed
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
@@ -114,29 +119,39 @@ print '  Incident angle of gravitational wave: theta =',theta
 print '  In f=epsilon*cos(kz-kt),'
 print '    epsilon: eps =',eps,'\n    k: kgrav =',kgrav
 print '  Speed of electromagnetic wave: c =',c
-print '  Function of x and y that sets the initial conditions:',t0funcxy
 
-u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy)
+print ' \nFunction of x and y that initializes the t=0 timeslice:',t0funcxy
+print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
 
-print 'Computing...'
+print 'Initializing...'
+u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy, t1funcxy)
+
 """
 See documentation for the derivations of the following equations and the meaning of these variable names.
 I have also subtracted one time step from every term since it makes more sense in this programming context.
+
+M is a 4-dimensional array which can be thought of as a 2D array representing the M matrix as defined in the documentation, but each element 
+of that matrix is itself a 2D array whose each grid-point corresponds to the value of that matrix element at that grid-point on our XY plane.
 """
+print 'Computing...'
+M=np.zeros((3,3,rowcnt,colcnt))
+M[2,2]=np.ones((rowcnt,colcnt))
 delsquaredLHS=np.zeros((rowcnt,colcnt))
 
 zprime=np.zeros((rowcnt,colcnt))
 for row in range(0,rowcnt): #Y
     for col in range(0,colcnt): #X
-        zprime[row,col]=col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the zprime (inverse rotation of Z for our XY plane Z=0)
+        zprime[row,col]=col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the inverse rotation of Z for our XY plane Z=0
 
-coszArray=np.cos(kgrav*zprime)
-sinzArray=np.sin(kgrav*zprime)
+#splitting cos(kz'-kct) into cos(kz')cos(kct)+sin(kz')sin(kct)
+cosTerm2D=np.cos(kgrav*zprime)
+sinTerm2D=np.sin(kgrav*zprime)
 for t in range(2,tstepcnt):
-    f=eps*(coszArray*np.cos(kgrav*c*t)+sinzArray*np.sin(kgrav*c*t))
-    M[0,0]=1+f
-    M[1,1]=1-f
-    T=TwoDimRotConj(M,theta)
+    f=eps*(cosTerm2D*np.cos(kgrav*c*t)+sinTerm2D*np.sin(kgrav*c*t))
+    M[0,0]=np.ones((rowcnt,colcnt))+f
+    M[1,1]=np.ones((rowcnt,colcnt))-f
+    .;......
+    T=ThreeDimRotConj(M,theta)
     delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
 u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
 
