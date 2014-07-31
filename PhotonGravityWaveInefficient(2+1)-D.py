@@ -66,20 +66,24 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-def initialSlices(rows, cols, ts, TwoVarFunc):
+def initialSlices(rows, cols, ts, t0, t1):
     """
-    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as the function of x and y.
-    This is then copied to the t=1 slice as well because 2 initial slices are needed in the discretized wave equation
-    and it makes more sense to use the same value instead of having the slice before the boundary to be all 0s because
-    that would pollute the discretized representation of the second order PDE with an artificially high rate of change.
+    Sets initial conditions.
+    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 and t=1 slices as the functions of x and y.
     """
     f = np.zeros((rows,cols,ts))
-    print 'Initializing...'
-    for row in range(0,rows):
-        for col in range(0,cols):
-            f[row,col,0]=evalFuncOfxyAtVal(TwoVarFunc,row,col)
+    if t0==t1: #both cases do the same thing, but if t0==t1, this code runs significantly faster
+        for row in range(0,rows):
+            for col in range(0,cols):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+        f[:,:,1]=f[:,:,0]
     
-    f[:,:,1]=f[:,:,0]
+    else:
+        for row in range(0,rows):
+            for col in range(0,cols):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+                f[row,col,1]=evalFuncOfxyAtVal(t1,row,col)
+    
     return f
 
 """
@@ -97,7 +101,8 @@ tstepcnt=121 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=80
 colcnt=80
 
-t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the starting time slices
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=1 slice
 theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
@@ -117,18 +122,20 @@ print '  Incident angle of gravitational wave: theta =',theta
 print '  In f=epsilon*cos(kz-kt),'
 print '    epsilon: eps =',eps,'\n    k: kgrav =',kgrav
 print '  Speed of electromagnetic wave: c =',c
-print '  Function of x and y that sets the initial conditions:',t0funcxy
 
-u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy)
+print ' \nFunction of x and y that initializes the t=0 timeslice:',t0funcxy
+print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
 
-print 'Computing...'
+print 'Initializing...'
+u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy, t1funcxy)
+
 """
 See documentation for the derivations of the following equations and the meaning of these variable names.
 I have also subtracted one time step from every term since it makes more sense in this programming context.
 """
+print 'Computing...'
 M=np.zeros((3,3))
 M[2,2]=1
-delsquaredLHS=np.zeros((rowcnt,colcnt))
 """
 leaves the 2 outermost rectangles along the edges as 0 (waves reflect):
 """
@@ -140,7 +147,7 @@ for t in range(2,tstepcnt):
             M[0,0]=1+f
             M[1,1]=1-f
             T=xySliceOf3DRotConj(M,theta)
-            delsquaredLHS=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,0]*(u[m+1,n+1,t-1]-u[m-1,n+1,t-1]-u[m+1,n-1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
+            delsquaredLHS=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+2*T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
             u[m,n,t]=K*delsquaredLHS+2*u[m,n,t-1]-u[m,n,t-2]
 
 """
