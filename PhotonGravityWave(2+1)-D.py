@@ -94,12 +94,12 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=151 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=60
-colcnt=70
+tstepcnt=121 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+rowcnt=80
+colcnt=80
 
-t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=0 slice
-t1funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=1 slice
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-(((x-0.1)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
 theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
@@ -134,26 +134,32 @@ M is a 4-dimensional array which can be thought of as a 2D array representing th
 of that matrix is itself a 2D array whose each grid-point corresponds to the value of that matrix element at that grid-point on our XY plane.
 """
 print 'Computing...'
-M=np.zeros((3,3,rowcnt,colcnt))
-M[2,2]=np.ones((rowcnt,colcnt))
-delsquaredLHS=np.zeros((rowcnt,colcnt))
+#M=np.zeros((3,3,rowcnt,colcnt))
+#M[2,2,:,:]=1 #rowcnt x colcnt grid of ones
+T=np.zeros((3,3,rowcnt,colcnt))
 
 zprime=np.zeros((rowcnt,colcnt))
 for row in range(0,rowcnt): #Y
     for col in range(0,colcnt): #X
         zprime[row,col]=col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the inverse rotation of Z for our XY plane Z=0
 
-#splitting cos(kz'-kct) into cos(kz')cos(kct)+sin(kz')sin(kct)
-cosTerm2D=np.cos(kgrav*zprime)
-sinTerm2D=np.sin(kgrav*zprime)
+#using cos(kz'-kct)=cos(kz')cos(kct)+sin(kz')sin(kct)
+#cosTermGrid=np.cos(kgrav*zprime)
+#sinTermGrid=np.sin(kgrav*zprime)
+
 for t in range(2,tstepcnt):
-    f=eps*(cosTerm2D*np.cos(kgrav*c*t)+sinTerm2D*np.sin(kgrav*c*t))
-    M[0,0]=np.ones((rowcnt,colcnt))+f
-    M[1,1]=np.ones((rowcnt,colcnt))-f
-    .;......
-    T=ThreeDimRotConj(M,theta)
-    delsquaredLHS=delnDxSlice(T[0,0]*delnDxSlice(u[:,:,t-1])+T[0,1]*delnDySlice(u[:,:,t-1]))+delnDySlice(T[1,0]*delnDxSlice(u[:,:,t-1])+T[1,1]*delnDySlice(u[:,:,t-1]))
-u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
+    f_tminus1=eps*np.cos(kgrav*zprime-kgrav*c*(t-1))
+    
+    T[0,0,:,:]=0.125*(4*f_tminus1*np.cos(2*theta)+f_tminus1*np.cos(4*theta)+3*f_tminus1+8)
+    T[1,1,:,:]=0.125*(-8*f_tminus1*np.cos(2*theta)-f_tminus1*np.cos(4*theta)+f_tminus1+8)
+    T[2,2,:,:]=0.5*(f_tminus1*np.cos(2*theta)-f_tminus1+2)
+    T[0,1]=T[1,0]=0.125*f_tminus1*(6*np.sin(2*theta)+np.sin(4*theta))
+    T[0,2]=T[2,0]=f_tminus1*np.cos(theta)*np.sin(theta)**2
+    T[1,2]=T[2,1]=-f_tminus1*np.sin(theta)*np.cos(theta)**2
+    
+    delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+2*T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
+    # which uses the fact that the T[0,1]*(u...) term equals the T[1,0]*(u...) term
+    u[:,:,t]=K*delsqrdLHS_tminus1+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------

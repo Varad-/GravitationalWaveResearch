@@ -101,12 +101,12 @@ tstepcnt=121 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=80
 colcnt=80
 
-t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=0 slice
-t1funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/4.0)**2/(rowcnt/20.0)))' #(string) function of x and y that initializes the t=1 slice
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-(((x-0.1)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
 theta = np.pi/3 #angle of incidence of grav wave
 eps=0.3 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.3 #K=(c*dt/dx)**2
+K=0.1 #K=(c*dt/dx)**2
 c=1 #c=1 for units of the wave speed
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
@@ -143,12 +143,13 @@ for t in range(2,tstepcnt):
     for m in range(2,rowcnt-2): #row indices -> Y
         for n in range(2,colcnt-2): #column indices -> X
             zprime=n*np.sin(theta)**2-m*np.cos(theta)*np.sin(theta) #for our XY plane, zprime = inverse rotation of Z eval'd at Z=0
-            f=eps*(np.cos(kgrav*zprime-kgrav*c*t))
-            M[0,0]=1+f
-            M[1,1]=1-f
+            f_tminus1=eps*np.cos(kgrav*zprime-kgrav*c*(t-1))
+            M[0,0]=1+f_tminus1
+            M[1,1]=1-f_tminus1
             T=xySliceOf3DRotConj(M,theta)
-            delsquaredLHS=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+2*T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
-            u[m,n,t]=K*delsquaredLHS+2*u[m,n,t-1]-u[m,n,t-2]
+            delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+2*T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
+            # which uses the fact that the T[0,1]*(u...) term equals the T[1,0]*(u...) term
+            u[m,n,t]=K*delsqrdLHS_tminus1+2*u[m,n,t-1]-u[m,n,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------

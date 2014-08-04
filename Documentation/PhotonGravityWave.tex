@@ -135,12 +135,12 @@ Now, we discretize Eq. \ref{expanded LHS} in terms of our previously defined num
 +\Delta\cdot &\text{nD}_Z\Big[ f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
 &+\frac{1}{2} (f \cos (2 \theta )-f+2) \Delta\cdot\text{nD}_Z(u_{m,n,o,t}) \Big].
 \end{align}
-Now, we can explicitly write Eq. \ref{delsqrLHS} by applying Eqs. \ref{nDX and nDY} distributively.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} The expressions are now exceedingly long, but below is the (2+1)-dimensional XY slice of the final explicit equation (with the coefficients put back as the components of $\textbf{T}$ that were written out in Eq. \ref{delsqrLHS}) taken at time $t-1$ for later convenience.
+Now, we can explicitly write Eq. \ref{delsqrLHS} by applying Eqs. \ref{nDX and nDY} distributively.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} The expressions are now exceedingly long, but below is the (2+1)-dimensional XY slice of the final explicit equation (with the coefficients put back as the components of $\textbf{T}$ that were written out in Eq. \ref{delsqrLHS}) taken at time $t-1$ for later programming convenience.
 \begin{align} \label{delsqrLHS explicit 2d}
-\Delta^2 \cdot LHS_{m,n,t-1}=\frac{1}{4}\Big(&T_{0,0}(u_{m,n+2,t-1}-2u_{m,n,t-1}+u_{m,n-2,t-1}) \nonumber \\
-+&T_{0,1}(u_{m+1,n+1,t-1}-u_{m+1,n-1,t-1}-u_{m-1,n+1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
-+&T_{1,0}(u_{m+1,n+1,t-1}-u_{m-1,n+1,t-1}-u_{m+1,n-1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
-+&T_{1,1}(u_{m+2,n,t-1}-2u_{m,n,t-1}+u_{m-2,n,t-1})\Big)
+\Delta^2 \cdot LHS_{m,n,t-1}=\frac{1}{4}\Big(&{T_{0,0}}_{m,n,t-1}(u_{m,n+2,t-1}-2u_{m,n,t-1}+u_{m,n-2,t-1}) \nonumber \\
++&{T_{0,1}}_{m,n,t-1}(u_{m+1,n+1,t-1}-u_{m+1,n-1,t-1}-u_{m-1,n+1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
++&{T_{1,0}}_{m,n,t-1}(u_{m+1,n+1,t-1}-u_{m-1,n+1,t-1}-u_{m+1,n-1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
++&{T_{1,1}}_{m,n,t-1}(u_{m+2,n,t-1}-2u_{m,n,t-1}+u_{m-2,n,t-1})\Big)
 \end{align}
 The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS$ gives us the fully discretized form of Eq. \ref{main eqn},
 \begin{equation} \label{discr1}
