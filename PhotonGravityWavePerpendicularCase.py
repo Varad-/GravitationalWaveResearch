@@ -44,20 +44,24 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-def initialSlices(rows, cols, ts, TwoVarFunc):
+def initialSlices(rows, cols, ts, t0, t1):
     """
-    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 boundary as the function of x and y.
-    This is then copied to the t=1 slice as well because 2 initial slices are needed in the discretized wave equation
-    and it makes more sense to use the same value instead of having the slice before the boundary to be all 0s because
-    that would pollute the discretized representation of the second order PDE with an artificially high rate of change.
+    Sets initial conditions.
+    Initializes a 2+1 dimensional array with all zeros and initializes the t=0 and t=1 slices as the functions of x and y.
     """
     f = np.zeros((rows,cols,ts))
-    print 'Initializing...'
-    for row in range(0,rows):
-        for col in range(0,cols):
-            f[row,col,0]=evalFuncOfxyAtVal(TwoVarFunc,row,col)
+    if t0==t1: #both cases do the same thing, but if t0==t1, this code runs significantly faster
+        for row in range(0,rows):
+            for col in range(0,cols):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+        f[:,:,1]=f[:,:,0]
     
-    f[:,:,1]=f[:,:,0]
+    else:
+        for row in range(0,rows):
+            for col in range(0,cols):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+                f[row,col,1]=evalFuncOfxyAtVal(t1,row,col)
+    
     return f
 
 """
@@ -71,14 +75,16 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=901 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=300
-colcnt=300
+tstepcnt=201 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+rowcnt=150
+colcnt=150
 
-t0funcxy = 'np.exp(-((x-colcnt/2)**2/(colcnt/20)+(y-rowcnt/2)**2/(rowcnt/20)))' #(string) function of x and y that initializes the starting time slices
-eps=0.4 #meaning of epsilon is in the documentation,  must be <1?
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-(((x-K**0.5)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
+eps=0.4 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.3 #K=(waveSpeed*dt/dx)**2, must be well below 1.
+K=0.01 #K=(waveSpeed*dt/dx)**2, must be well below 1.
+c=1 #c=1 for units of the wave speed
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
@@ -88,11 +94,15 @@ print '\n Computational parameters'
 print '  Number of rows: rowcnt = %d\n  Number of columns: colcnt = %d\n  Number of time slices: tstepcnt = %d' %(rowcnt,colcnt,tstepcnt)
 print '  (waveSpeed * delta t / delta x)^2: K =',K,' [!Read docstrings and accompanying documentation before changing K!]'
 
-print '\n Physical parameters in f=epsilon*cos(kz-kt)'
-print '  epsilon: eps =',eps,'\n  k: kgrav =',kgrav
-print '  Function of x and y that sets the initial conditions:',t0funcxy
+print '\n Physical parameters:'
+print '  In f=epsilon*cos(kz-kct),'
+print '    amplitude: eps =',eps,'\n    k: kgrav =',kgrav,'\n    wave speed: c =',c
 
-u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy)
+print ' \nFunction of x and y that initializes the t=0 timeslice:',t0funcxy
+print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
+
+print 'Initializing...'
+u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy, t1funcxy)
 
 print 'Computing...'
 """
@@ -101,9 +111,9 @@ I have also subtracted one time step from every term since it makes more sense i
 """
 
 for t in range(2,tstepcnt):
-    f=eps*np.cos(kgrav*t) #f=eps*np.cos(kgrav*z-kgrav*t) where z=0
-    delsquaredLHS=delnDxSlice((1+f)*delnDxSlice(u[:,:,t-1]))+delnDySlice((1-f)*delnDySlice(u[:,:,t-1]))
-    u[:,:,t]=K*delsquaredLHS+2*u[:,:,t-1]-u[:,:,t-2]
+    f_tminus1=eps*np.cos(kgrav*c*(t-1))
+    delsqrdLHS_tminus1=delnDxSlice((1+f_tminus1)*delnDxSlice(u[:,:,t-1]))+delnDySlice((1-f_tminus1)*delnDySlice(u[:,:,t-1]))
+    u[:,:,t]=K*delsqrdLHS_tminus1+2*u[:,:,t-1]-u[:,:,t-2]
 
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------

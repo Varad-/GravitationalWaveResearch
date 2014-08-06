@@ -4,6 +4,10 @@
 
 Produces a (2+1)D animation showing a (electromagnetic) wave potential being influenced by a gravitational wave after taking some (3+1)D considerations 
 into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
+
+The computations are done using 4D arrays treated as 2D matrices of 2D grids. 
+The 2D matrices are to do with the 3x3 spatial slice of the metric tensor. 
+The grids represent each point of our discretized plane.
 """
 
 import numpy as np
@@ -116,9 +120,8 @@ print '  (speed of electromagnetic wave * delta t / delta x)^2: K =',K,' [!Read 
 
 print '\n Physical parameters:'
 print '  Incident angle of gravitational wave: theta =',theta
-print '  In f=epsilon*cos(kz-kt),'
-print '    epsilon: eps =',eps,'\n    k: kgrav =',kgrav
-print '  Speed of electromagnetic wave: c =',c
+print '  In f=epsilon*cos(kz-kct),'
+print '    amplitude: eps =',eps,'\n    k: kgrav =',kgrav,'\n    wave speed: c =',c
 
 print ' \nFunction of x and y that initializes the t=0 timeslice:',t0funcxy
 print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
@@ -134,8 +137,6 @@ M is a 4-dimensional array which can be thought of as a 2D array representing th
 of that matrix is itself a 2D array whose each grid-point corresponds to the value of that matrix element at that grid-point on our XY plane.
 """
 print 'Computing...'
-#M=np.zeros((3,3,rowcnt,colcnt))
-#M[2,2,:,:]=1 #rowcnt x colcnt grid of ones
 T=np.zeros((3,3,rowcnt,colcnt))
 
 zprime=np.zeros((rowcnt,colcnt))
@@ -153,12 +154,11 @@ for t in range(2,tstepcnt):
     T[0,0,:,:]=0.125*(4*f_tminus1*np.cos(2*theta)+f_tminus1*np.cos(4*theta)+3*f_tminus1+8)
     T[1,1,:,:]=0.125*(-8*f_tminus1*np.cos(2*theta)-f_tminus1*np.cos(4*theta)+f_tminus1+8)
     T[2,2,:,:]=0.5*(f_tminus1*np.cos(2*theta)-f_tminus1+2)
-    T[0,1]=T[1,0]=0.125*f_tminus1*(6*np.sin(2*theta)+np.sin(4*theta))
-    T[0,2]=T[2,0]=f_tminus1*np.cos(theta)*np.sin(theta)**2
-    T[1,2]=T[2,1]=-f_tminus1*np.sin(theta)*np.cos(theta)**2
+    T[0,1,:,:]=T[1,0,:,:]=0.125*f_tminus1*(6*np.sin(2*theta)+np.sin(4*theta))
+    T[0,2,:,:]=T[2,0,:,:]=f_tminus1*np.cos(theta)*np.sin(theta)**2
+    T[1,2,:,:]=T[2,1,:,:]=-f_tminus1*np.sin(theta)*np.cos(theta)**2
     
-    delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+2*T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
-    # which uses the fact that the T[0,1]*(u...) term equals the T[1,0]*(u...) term
+    delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,0]*(u[m+1,n+1,t-1]-u[m-1,n+1,t-1]-u[m+1,n-1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
     u[:,:,t]=K*delsqrdLHS_tminus1+2*u[:,:,t-1]-u[:,:,t-2]
 
 """

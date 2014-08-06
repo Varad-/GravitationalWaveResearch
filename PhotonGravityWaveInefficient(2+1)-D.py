@@ -97,16 +97,16 @@ means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, 
 further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
 will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
-tstepcnt=121 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+tstepcnt=120 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
 rowcnt=80
 colcnt=80
 
 t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
-t1funcxy = 'np.exp(-(((x-0.1)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
+t1funcxy = 'np.exp(-(((x-K**0.5)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
 theta = np.pi/3 #angle of incidence of grav wave
-eps=0.3 #meaning of epsilon is in the documentation
+eps=0 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.1 #K=(c*dt/dx)**2
+K=0.03 #K=(c*dt/dx)**2
 c=1 #c=1 for units of the wave speed
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
@@ -119,9 +119,8 @@ print '  (speed of electromagnetic wave * delta t / delta x)^2: K =',K,' [!Read 
 
 print '\n Physical parameters:'
 print '  Incident angle of gravitational wave: theta =',theta
-print '  In f=epsilon*cos(kz-kt),'
-print '    epsilon: eps =',eps,'\n    k: kgrav =',kgrav
-print '  Speed of electromagnetic wave: c =',c
+print '  In f=epsilon*cos(kz-kct),'
+print '    amplitude: eps =',eps,'\n    k: kgrav =',kgrav,'\n    wave speed: c =',c
 
 print ' \nFunction of x and y that initializes the t=0 timeslice:',t0funcxy
 print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
@@ -147,8 +146,7 @@ for t in range(2,tstepcnt):
             M[0,0]=1+f_tminus1
             M[1,1]=1-f_tminus1
             T=xySliceOf3DRotConj(M,theta)
-            delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+2*T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
-            # which uses the fact that the T[0,1]*(u...) term equals the T[1,0]*(u...) term
+            delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,0]*(u[m+1,n+1,t-1]-u[m-1,n+1,t-1]-u[m+1,n-1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
             u[m,n,t]=K*delsqrdLHS_tminus1+2*u[m,n,t-1]-u[m,n,t-2]
 
 """

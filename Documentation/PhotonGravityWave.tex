@@ -128,19 +128,23 @@ LHS&=\frac{\partial}{\partial X}\Big[\frac{1}{8} (4 f \cos (2 \theta )+f \cos (4
 \end{align}
 Now, we discretize Eq. \ref{expanded LHS} in terms of our previously defined numerical derivatives. For later convenience, let us multiply Eqs. \ref{nDX and nDY} by the spatial step size $\Delta$ and multiply the discretized form of Eq. \ref{expanded LHS} by $\Delta^2$ so as to put $LHS$ in terms of two functions, $\Delta\cdot\mbox{nD}_X$ and $\Delta\cdot\mbox{nD}_Y$, independent of parameters. This gives us
 \begin{align} \label{delsqrLHS}
-\Delta^2 \cdot LHS_{m,n,o,t}&=\Delta\cdot \text{nD}_X\Big[\frac{1}{8} (4 f \cos (2 \theta )+f \cos (4 \theta )+3 f+8) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
-&+\frac{1}{8} f (6 \sin (2\theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_Y(u_{m,n,o,t})+f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
-+\Delta\cdot &\text{nD}_Y\Big[ \frac{1}{8} f (6 \sin (2 \theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
-&+\frac{1}{8} (-8 f \cos (2 \theta) -f \cos (4 \theta )+f+8) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
-+\Delta\cdot &\text{nD}_Z\Big[ f \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) -f \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
-&+\frac{1}{2} (f \cos (2 \theta )-f+2) \Delta\cdot\text{nD}_Z(u_{m,n,o,t}) \Big].
+\Delta^2 \cdot LHS_{m,n,o,t}=\Delta\cdot \text{nD}_X&\Big[\frac{1}{8} (4 f_{m,n,o,t} \cos (2 \theta )+f_{m,n,o,t} \cos (4 \theta )+3 f_{m,n,o,t}+8) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
+&+\frac{1}{8} f_{m,n,o,t} (6 \sin (2\theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
+&+f_{m,n,o,t} \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
++\Delta\cdot \text{nD}_Y&\Big[ \frac{1}{8} f_{m,n,o,t} (6 \sin (2 \theta )+\sin (4 \theta )) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) \nonumber \\
+&+\frac{1}{8} (-8 f_{m,n,o,t} \cos (2 \theta) -f_{m,n,o,t} \cos (4 \theta )+f_{m,n,o,t}+8) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
+&-f_{m,n,o,t} \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Z(u_{m,n,o,t})\Big] \nonumber \\
++\Delta\cdot \text{nD}_Z &\Big[ f_{m,n,o,t} \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) -f_{m,n,o,t} \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
+&+\frac{1}{2} (f_{m,n,o,t} \cos (2 \theta )-f+2) \Delta\cdot\text{nD}_Z(u_{m,n,o,t}) \Big].
 \end{align}
-Now, we can explicitly write Eq. \ref{delsqrLHS} by applying Eqs. \ref{nDX and nDY} distributively.\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} The expressions are now exceedingly long, but below is the (2+1)-dimensional XY slice of the final explicit equation (with the coefficients put back as the components of $\textbf{T}$ that were written out in Eq. \ref{delsqrLHS}) taken at time $t-1$ for later programming convenience.
-\begin{align} \label{delsqrLHS explicit 2d}
-\Delta^2 \cdot LHS_{m,n,t-1}=\frac{1}{4}\Big(&{T_{0,0}}_{m,n,t-1}(u_{m,n+2,t-1}-2u_{m,n,t-1}+u_{m,n-2,t-1}) \nonumber \\
-+&{T_{0,1}}_{m,n,t-1}(u_{m+1,n+1,t-1}-u_{m+1,n-1,t-1}-u_{m-1,n+1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
-+&{T_{1,0}}_{m,n,t-1}(u_{m+1,n+1,t-1}-u_{m-1,n+1,t-1}-u_{m+1,n-1,t-1}+u_{m-1,n-1,t-1}) \nonumber \\
-+&{T_{1,1}}_{m,n,t-1}(u_{m+2,n,t-1}-2u_{m,n,t-1}+u_{m-2,n,t-1})\Big)
+For some uses, an explicit expression without nested functions will be necessary. We achieve this by applying Eqs. \ref{nDX and nDY} distributively\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} throughout Eq.\ref{delsqrLHS}. Rewriting, for brevity, the coefficients (written out in terms of $f$ in Eq. \ref{delsqrLHS}) as components of $\textbf{T}$ (given by Eq. \ref{T}) and evaluating at time $t-1$ for later programming convenience produces the desired explicit form.
+\begin{align} \label{delsqrLHS explicit}
+\Delta^2 \cdot LHS_{m,n,o,t-1}=\frac{1}{4}\Big(&{T_{0,0}}_{m,n,o,t-1}(u_{m,n+2,o,t-1}-2u_{m,n,o,t-1}+u_{m,n-2,o,t-1}) \nonumber \\
++&{T_{0,1}}_{m,n,o,t-1}(u_{m+1,n+1,o,t-1}-u_{m+1,n-1,o,t-1}-u_{m-1,n+1,o,t-1}+u_{m-1,n-1,o,t-1}) \nonumber \\
++&{T_{1,0}}_{m,n,o,t-1}(u_{m+1,n+1,o,t-1}-u_{m-1,n+1,o,t-1}-u_{m+1,n-1,o,t-1}+u_{m-1,n-1,o,t-1}) \nonumber \\
++&{T_{1,1}}_{m,n,o,t-1}(u_{m+2,n,o,t-1}-2u_{m,n,o,t-1}+u_{m-2,n,o,t-1})\Big) \\
+&[add\ third\ dimension.\nonumber \\
+&can't take T terms out because they depend on x,y,z too??] \nonumber
 \end{align}
 The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS$ gives us the fully discretized form of Eq. \ref{main eqn},
 \begin{equation} \label{discr1}
@@ -151,7 +155,7 @@ Finally, applying Eqs. \ref{nDX and nDY} to Eq. \ref{discr1} and collecting para
 \boxed{
 u_{m,n,o,t}=\left(c\ \frac{\Delta t}{\Delta}\right)^2 \Delta^2 \cdot LHS_{m,n,o,t-1}+2u_{m,n,o,t-1}-u_{m,n,o,t-2}
 } \\
-\text{with $\Delta^2 \cdot LHS$ given by Eq. \ref{delsqrLHS}.} \nonumber
+\text{with $\Delta^2 \cdot LHS_{m,n,o,t-1}$ given by Eq. \ref{delsqrLHS explicit}.} \nonumber
 \end{align}
 The manipulation that allowed us to program the numerical partial derivative functions independently of parameters now gives rise to the accumulated parameter
 \begin{equation} \label{K}
