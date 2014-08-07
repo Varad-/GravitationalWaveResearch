@@ -15,11 +15,11 @@ import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as anim
 
+"""
 def ThreeDimRotConj(Q,angle):
-    """
-    Takes a 3x3 matrix Q and returns RQR^-1 where R is the 3x3 matrix for a rotation by the given angle about z' and then about x'.
-    Since R is orthogonal, R^-1=R^transpose
-    """
+    #Takes a 3x3 matrix Q and returns RQR^-1 where R is the 3x3 matrix for a rotation by the given angle about z' and then about x'.
+    #Since R is orthogonal, R^-1=R^transpose
+    
     R=np.zeros((3,3))
 
     R[0,0]=np.cos(angle)
@@ -33,6 +33,7 @@ def ThreeDimRotConj(Q,angle):
     R[2,2]=np.cos(angle)
     
     return R.dot(Q).dot(R.T)
+"""
 
 def delnDxSlice(tslice):
     """
