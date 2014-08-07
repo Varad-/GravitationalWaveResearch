@@ -29,7 +29,7 @@ def delnDySlice(tslice):
     
 def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
-    Evaluates a mathematical function of 2 variables written as a string in Python syntax in terms of x and y at a specified point (xval,yval). 
+    Evaluates a mathematical function of 2 variables written as a string in Python syntax in terms of x and y at a specified point (colval,rowval). 
     f must be in terms of x and y because it is tedious to allow any variable name. e.g. It is cumbersome to let python know which n
     is the variable in the string 'sin(n)'
     """

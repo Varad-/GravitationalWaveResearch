@@ -32,7 +32,7 @@ def delnDySlice(tslice):
     
 def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
-    Evaluates a mathematical function of 2 variables written as a string in Python syntax in terms of x and y at a specified point (xval,yval). 
+    Evaluates a mathematical function of 2 variables written as a string in Python syntax in terms of x and y at a specified point (colval,rowval). 
     f must be in terms of x and y because it is tedious to allow any variable name. e.g. It is cumbersome to let python know which n
     is the variable in the string 'sin(n)'
     """
@@ -65,7 +65,8 @@ def initialSlices(rows, cols, ts, t0, t1):
     return f
 
 """
------------------------parameters-----------------------
+--------------------------------------------------------------ADJUSTABLE PARAMETERS--------------------------------------------------------------
+
 K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
 method to successfully approximate a solution to the wave equation, K must be less than 1. The accompanying documentation file explains 
 what K means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower K is, the more "frames" are 
@@ -83,8 +84,11 @@ t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.
 t1funcxy = 'np.exp(-(((x-K**0.5)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
 eps=0.4 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.01 #K=(waveSpeed*dt/dx)**2, must be well below 1.
+K=0.1 #K=(waveSpeed*dt/dx)**2, must be well below 1.
 c=1 #c=1 for units of the wave speed
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------------
+"""
 
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
@@ -98,7 +102,7 @@ print '\n Physical parameters:'
 print '  In f=epsilon*cos(kz-kct),'
 print '    amplitude: eps =',eps,'\n    k: kgrav =',kgrav,'\n    wave speed: c =',c
 
-print ' \nFunction of x and y that initializes the t=0 timeslice:',t0funcxy
+print '\n Function of x and y that initializes the t=0 timeslice:',t0funcxy
 print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
 
 print 'Initializing...'
@@ -118,7 +122,6 @@ for t in range(2,tstepcnt):
 """
 ------------------ numerical computations done, solutions at all times stored in u ------------------
 """
-print '100% Done.'
 print 'The computed animation has a spatial resolution of %d columns x %d rows and shows %d frames of time' % (colcnt, rowcnt, tstepcnt)
 
 #Animating as a heat map showing each time-slice:
