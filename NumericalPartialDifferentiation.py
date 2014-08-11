@@ -7,6 +7,9 @@ Numerical 2D partial differentiation using finite differences (averaging the dif
 
 import numpy as np
 
+rows = 7
+cols = 8
+
 def delnDxSlice(tslice):
     """
     Takes a time slice and returns an evaluated 2d grid of the grid spacing (delta x) times the numerical derivative of f[row][col][time] 
@@ -15,7 +18,6 @@ def delnDxSlice(tslice):
     nDx=np.zeros(np.shape(tslice))    
     nDx[1:-1,1:-1]=0.5*(tslice[1:-1,2:]-tslice[1:-1,:-2])
     return nDx
-    
 
 def delnDySlice(tslice):
     """
@@ -41,10 +43,7 @@ def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     return eval(TwoVarFunc)
 
-rows = 7
-cols = 8
-
-f = np.zeros((rows,cols))
+f = np.zeros((rows,cols)) #only 1 time slice
 t0funcxy = raw_input('\nDefine a function of x and y that sets the t=0 grid (in Python syntax). f(x,y)=')
 for row in range(0,rows):
     for col in range(0,cols):

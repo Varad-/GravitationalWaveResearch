@@ -2,10 +2,11 @@
 """
 @author: Varadarajan Srinivasan
 
-Produces a (2+1)D animation showing a (electromagnetic) wave potential being influenced by a gravitational wave after taking some (3+1)D considerations 
-into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in.
+Produces a (2+1)D animation showing an electromagnetic potential being influenced by a passing gravitational wave after taking (3+1)D considerations 
+into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in. This represents a wire-like 
+potential, but the code can easily be extended to full (3+1)D by including all components of the equations provided in the documentation.
 
-The computations are done using 4D arrays treated as 2D matrices of 2D grids. 
+Runtime has been enormously improved by array slicing over 4D arrays (treated as 2D matrices of 2D grids) instead of looping over 2D arrays.
 The 2D matrices are to do with the 3x3 spatial slice of the metric tensor. 
 The grids represent each point of our discretized plane.
 """
@@ -16,44 +17,34 @@ import matplotlib as mat
 import matplotlib.animation as anim
 
 """
-def ThreeDimRotConj(Q,angle):
-    #Takes a 3x3 matrix Q and returns RQR^-1 where R is the 3x3 matrix for a rotation by the given angle about z' and then about x'.
-    #Since R is orthogonal, R^-1=R^transpose
-    
-    R=np.zeros((3,3))
+--------------------------------------------------------------ADJUSTABLE PARAMETERS--------------------------------------------------------------
+"""
+tstepcnt=501 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1. Must be >=2 for program to run (2 slices needed to initialize u)
+rowcnt=150
+colcnt=150
 
-    R[0,0]=np.cos(angle)
-    R[0,1]=-np.cos(angle)*np.sin(angle)
-    R[0,2]=np.sin(angle)**2
-    R[1,0]=np.sin(angle)
-    R[1,1]=np.cos(angle)**2
-    R[1,2]=-np.cos(angle)*np.sin(angle)
-    R[2,0]=0
-    R[2,1]=np.sin(angle)
-    R[2,2]=np.cos(angle)
-    
-    return R.dot(Q).dot(R.T)
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))+np.exp(-((y-colcnt/3.0)**2/(colcnt/20.0)+(x-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-(((x+K**0.5)-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))+np.exp(-(((y+K**0.5)-colcnt/3.0)**2/(colcnt/20.0)+(x-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
+
+theta = np.pi/2 #angle of incidence of grav wave
+eps=0.5 #meaning of epsilon is in the documentation
+kgrav=0.02 #this is the k_grav from cos(kz-kt)
+c=1 #c=1 for units of the wave speed
+
+K=0.3 #K=(c*dt/dx)**2
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
+method to successfully approximate a solution to the wave equation, K must be less than 1. The accompanying documentation file explains 
+what K means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower K is, the more "frames" are 
+computed for a given wave period. The way this program is built, the time-resolution gained by lowering k does not change the runtime. 
+Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher K 
+means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
+further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
+will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
 """
 
-def delnDxSlice(tslice):
-    """
-    Takes a time slice and returns an evaluated 2d grid of the grid spacing (delta x) times the numerical derivative of f[row][col][time] 
-    with respect to x (i.e. column index). Derivatives are only evaluated on the interior of the grid. The edges are left as 0.
-    """
-    nDx=np.zeros(np.shape(tslice))    
-    nDx[1:-1,1:-1]=0.5*(tslice[1:-1,2:]-tslice[1:-1,:-2])
-    return nDx
-
-def delnDySlice(tslice):
-    """
-    Takes a time slice and returns an evaluated 2d grid of the grid spacing (delta y) times the numerical derivative of f[row][col][time] 
-    with respect to y (i.e. row index). Note that in the matrix this means the y coordinate points downwards. Derivatives are only evaluated 
-    on the interior of the grid. The edges are left as 0.
-    """
-    nDy=np.zeros(np.shape(tslice))
-    nDy[1:-1,1:-1]=0.5*(tslice[2:,1:-1]-tslice[:-2,1:-1])
-    return nDy
-    
 def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
     Evaluates a mathematical function of 2 variables written as a string in Python syntax in terms of x and y at a specified point (colval,rowval). 
@@ -72,52 +63,25 @@ def initialSlices(rows, cols, ts, t0, t1):
     """
     Sets initial conditions.
     Initializes a 2+1 dimensional array with all zeros and initializes the t=0 and t=1 slices as the functions of x and y.
+    The returned array effectively is 2 rectangles of 0s surrounding a rows x cols grid evaluated for x and y where the origin (0,0) is taken at 
+    the top left of the interior nonzero array. That is, the origin is at row index 2, col index 2.
     """
-    f = np.zeros((rows,cols,ts))
+    f = np.zeros((rows+4,cols+4,ts))
     if t0==t1: #both cases do the same thing, but if t0==t1, this code runs significantly faster
-        for row in range(0,rows):
-            for col in range(0,cols):
-                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
+        for row in range(2,rows+2):
+            for col in range(2,cols+2):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row-2,col-2)
         f[:,:,1]=f[:,:,0]
     
     else:
-        for row in range(0,rows):
-            for col in range(0,cols):
-                f[row,col,0]=evalFuncOfxyAtVal(t0,row,col)
-                f[row,col,1]=evalFuncOfxyAtVal(t1,row,col)
+        for row in range(2,rows+2):
+            for col in range(2,cols+2):
+                f[row,col,0]=evalFuncOfxyAtVal(t0,row-2,col-2)
+                f[row,col,1]=evalFuncOfxyAtVal(t1,row-2,col-2)
     
     return f
 
-"""
---------------------------------------------------------------ADJUSTABLE PARAMETERS--------------------------------------------------------------
-
-K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
-method to successfully approximate a solution to the wave equation, K must be less than 1. The accompanying documentation file explains 
-what K means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower K is, the more "frames" are 
-computed for a given wave period. The way this program is built, the time-resolution gained by lowering k does not change the runtime. 
-Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher K 
-means the delta t between time-slices is higher (K is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
-further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
-will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
-"""
-tstepcnt=121 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-rowcnt=80
-colcnt=80
-
-t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
-t1funcxy = 'np.exp(-(((x-0.1)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
-theta = np.pi/3 #angle of incidence of grav wave
-eps=0.3 #meaning of epsilon is in the documentation
-kgrav=0.02 #this is the k_grav from cos(kz-kt)
-K=0.3 #K=(c*dt/dx)**2
-c=1 #c=1 for units of the wave speed
-"""
--------------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
-
-print '\nThese are the values currently set for the fully adjustable parameters:'
+print '\nCalculating animation of an electromagnetic potential influenced by a passing gravitational wave based on the following parameters which can be adjusted near the top of the code.'
 
 print '\n Computational parameters'
 print '  Number of rows: rowcnt = %d\n  Number of columns: colcnt = %d\n  Number of time slices: tstepcnt = %d' %(rowcnt,colcnt,tstepcnt)
@@ -133,13 +97,14 @@ print ' Function of x and y that initializes the t=1 timeslice:',t1funcxy,'\n\n'
 
 print 'Initializing...'
 u=initialSlices(rowcnt,colcnt,tstepcnt, t0funcxy, t1funcxy)
+#now u is a rowcnt+4 by colcnt+4 grid with two surrounding boundaries of 0s
 
 """
-See documentation for the derivations of the following equations and the meaning of these variable names.
-I have also subtracted one time step from every term since it makes more sense in this programming context.
+See documentation for the derivations of the following equations and the meaning of the variable names.
 
-M is a 4-dimensional array which can be thought of as a 2D array representing the M matrix as defined in the documentation, but each element 
-of that matrix is itself a 2D array whose each grid-point corresponds to the value of that matrix element at that grid-point on our XY plane.
+T is a 4-dimensional array which can be thought of as a 2D array representing the R.M.R^-1 matrix as defined in the documentation, but each 
+"element" of that matrix is itself a 2D array each of whose grid-point corresponds to the value of that matrix element at that grid-point on 
+our discretized XY plane.
 """
 print 'Computing...'
 T=np.zeros((3,3,rowcnt,colcnt))
@@ -148,10 +113,6 @@ zprime=np.zeros((rowcnt,colcnt))
 for row in range(0,rowcnt): #Y
     for col in range(0,colcnt): #X
         zprime[row,col]=col*np.sin(theta)**2-row*np.cos(theta)*np.sin(theta) #this is the inverse rotation of Z for our XY plane Z=0
-
-#using cos(kz'-kct)=cos(kz')cos(kct)+sin(kz')sin(kct)
-#cosTermGrid=np.cos(kgrav*zprime)
-#sinTermGrid=np.sin(kgrav*zprime)
 
 for t in range(2,tstepcnt):
     f_tminus1=eps*np.cos(kgrav*zprime-kgrav*c*(t-1))
@@ -163,12 +124,10 @@ for t in range(2,tstepcnt):
     T[0,2,:,:]=T[2,0,:,:]=f_tminus1*np.cos(theta)*np.sin(theta)**2
     T[1,2,:,:]=T[2,1,:,:]=-f_tminus1*np.sin(theta)*np.cos(theta)**2
     
-    delsqrdLHS_tminus1=0.25*(T[0,0]*(u[m,n+2,t-1]-2*u[m,n,t-1]+u[m,n-2,t-1])+T[0,1]*(u[m+1,n+1,t-1]-u[m+1,n-1,t-1]-u[m-1,n+1,t-1]+u[m-1,n-1,t-1])+T[1,0]*(u[m+1,n+1,t-1]-u[m-1,n+1,t-1]-u[m+1,n-1,t-1]+u[m-1,n-1,t-1])+T[1,1]*(u[m+2,n,t-1]-2*u[m,n,t-1]+u[m-2,n,t-1]))
-    u[:,:,t]=K*delsqrdLHS_tminus1+2*u[:,:,t-1]-u[:,:,t-2]
+    delsqrdLHS_tminus1=0.25*(T[0,0,:,:]*(u[2:-2,4:,t-1]-2*u[2:-2,2:-2,t-1]+u[2:-2,:-4,t-1])+T[0,1,:,:]*(u[3:-1,3:-1,t-1]-u[3:-1,1:-3,t-1]-u[1:-3,3:-1,t-1]+u[1:-3,1:-3,t-1])+T[1,0,:,:]*(u[3:-1,3:-1,t-1]-u[1:-3,3:-1,t-1]-u[3:-1,1:-3,t-1]+u[1:-3,1:-3,t-1])+T[1,1,:,:]*(u[4:,2:-2,t-1]-2*u[2:-2,2:-2,t-1]+u[:-4,2:-2,t-1]))
+    u[2:-2,2:-2,t]=K*delsqrdLHS_tminus1+2*u[2:-2,2:-2,t-1]-u[2:-2,2:-2,t-2]
 
-"""
------------------- numerical computations done, solutions at all times stored in u ------------------
-"""
+#------------------ Numerical computations done. Solutions at all times stored in u. ------------------
 print 'The computed animation has a spatial resolution of %d columns x %d rows and shows %d frames of time' % (colcnt, rowcnt, tstepcnt)
 
 #Animating as a heat map showing each time-slice:
@@ -180,15 +139,8 @@ ax.set_aspect('equal')
 
 def frame(n):
     ax.clear()
-    ax.imshow(u[:,:,n])
+    ax.imshow(u[2:-2,2:-2,n]) #doesn't show the outer 0 edges that were used as the outer boundary condition in the array slicing computations
     ax.set_aspect('equal')
     
 dummy = anim.FuncAnimation(fig,frame,range(tstepcnt),interval=25)
 pl.show()
-
-#run the following loop to print the time-slices chronologically as 2d arrays:
-"""
-for time in range(0,tstepcnt):
-    print 't = ',time
-    print u[:,:,time]
-"""

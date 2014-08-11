@@ -2,14 +2,43 @@
 """
 @author: Varadarajan Srinivasan
 
-This program discretizes and solves the wave equation in 2+1 dimensions for user-inputted parameters and initial conditions. This uses inefficient for loops 
-instead of array slicing, but does compute the edges as if they were surrounding the zeros instead of leaving the edges themselves as 0 and only computing the interior.
+This program discretizes and solves the wave equation in 2+1 dimensions for user-inputted parameters and initial conditions.
+
+This is very inefficient to run in an interpreted language. See WaveEquationOptimized.py for the much faster optimization for Python.
 """
 import numpy as np
 import pylab as pl
 import matplotlib as mat
 import matplotlib.animation as m
 
+"""
+--------------------------------------------------------------ADJUSTABLE PARAMETERS--------------------------------------------------------------
+"""
+tstepcnt=100 #creates tstepcnt slices indexed from t=0 to t=tstepcnt-1
+rowcnt=100
+colcnt=100
+
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-(((x-K**0.5)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
+
+edgeType = 1
+K=0.25 #K=(waveSpeed*dt/dx)**2
+"""
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+When edgeType is set to 0, the points along the edge of the grid will be solved with the discretized wave equation imagining that the 
+adjacent points that would be outside the grid are 0. When edgeType is set to 1, it cyclically takes the corresponding values from the 
+opposite edges of the grid.
+
+K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
+method to successfully approximate a solution to the wave equation, K must be less than 1. The accompanying documentation file explains 
+what K means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower K is, the more "frames" are 
+computed for a given wave period. The way this program is built, the time-resolution gained by lowering K does not change the runtime. 
+Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher K 
+means the delta t between time-slices is higher (k is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
+further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
+will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
+"""
 
 def evalFuncOfxyAtVal(TwoVarFunc,rowval,colval): ##f MUST BE IN TERMS OF x,y
     """
@@ -59,8 +88,8 @@ def solveTimeSlice(f,t,rows,cols,bndcnd):
     we take the outside imaginary point as having value 0, regardless of the environment.    
     
     Option 1: Cyclical
-    We imagine the grid is surrounded by a rectangle of zeros so that whenever the wave equation needs to be evaluated at edges,
-    we take the outside imaginary point as having value 0, regardless of the environment.
+    For each edge point, the value of the point that would be outside the grid is taken from the point on the corresponding opposite edge.
+    Effectively, we solve this as though the grid repeated itself infinitely in every direction.
     -------------------------------------------------
     
     For easy readability in the specific case equations, their terms that differ from the general equation are surrounded by spaces.
@@ -127,37 +156,6 @@ def solveTimeSlice(f,t,rows,cols,bndcnd):
     """
     return f
 
-"""
---------------------------------------------------------------ADJUSTABLE PARAMETERS--------------------------------------------------------------
-
-When edgeType is set to 0, the points along the edge of the grid will be solved with the discretized wave equation imagining that the 
-adjacent points that would be outside the grid are 0. When edgeType is set to 1, it cyclically takes the corresponding values from the 
-opposite edges of the grid.
-
-K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
-method to successfully approximate a solution to the wave equation, K must be less than 1. The accompanying documentation file explains 
-what K means, how it arises from discretizing the wave equation, and why it must be less than 1. The lower K is, the more "frames" are 
-computed for a given wave period. The way this program is built, the time-resolution gained by lowering K does not change the runtime. 
-Instead the drawback is just how far into the future we can see the wave because the number of time-slices computed is set. A higher K 
-means the delta t between time-slices is higher (k is prop. to (delta t)^2) so, with the same tstepcnt time-slices, we can model the wave 
-further into the future, but with a lower accuracy. Unlike evaluating an analytical solution at various times, the error from a high K 
-will grow with each time-slice because this numerical solution iteratively uses the previous 2 slices' values. Recommended K is 0.1 to 0.4.
-"""
-edgeType=0
-t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
-t1funcxy = 'np.exp(-(((x-K**0.5)-colcnt/3.0)**2/(colcnt/2.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
-
-tstepcnt=100 #creates tstepcnt slices indexed from t=0 to t=tstepcnt-1
-rowcnt=100
-colcnt=100
-
-K=0.25 #for grid spacings taken to be 1m, and a wave travelling at c, k=0.25 corresponds to a time-resolution of 6*10^8 s^-1
-#K=(waveSpeed*dt/dx)**2
-"""
--------------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-print '\nInput method for the boundary conditions (initial time slice) can be changed between manual (opt=0) and function (opt=1).'
 print '\nWave equation computations of the points along the edge of the grid can be changed between taking the would-be points outside the grid as 0 (edgeType=0), or cyclically taking the corresponding boundary points on the opposite edge (edgeType=1).'
 
 print '\nThese fully adjustable parameters are currently set as:\n'
@@ -202,11 +200,3 @@ def frame(n):
     
 dummy = m.FuncAnimation(fig,frame,range(tstepcnt),interval=25)
 pl.show()
-
-
-#run the following loop to print the time-slices chronologically as 2d arrays:
-"""
-for time in range(0,tstepcnt):
-    print 't = ',time
-    print u[:,:,time]
-"""
