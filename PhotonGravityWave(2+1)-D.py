@@ -6,6 +6,7 @@ Produces a (2+1)D animation showing an electromagnetic potential being influence
 into account such that results can be shown for any arbitrarily inclined angle at which the gravitational wave comes in. This represents a wire-like 
 potential, but the code can easily be extended to full (3+1)D by including all components of the equations provided in the documentation.
 
+Optimized for interpreted language (50,000 times faster for 400x400x400 grid):
 Runtime has been enormously improved by array slicing over 4D arrays (treated as 2D matrices of 2D grids) instead of looping over 2D arrays.
 The 2D matrices are to do with the 3x3 spatial slice of the metric tensor. 
 The grids represent each point of our discretized plane.
@@ -23,10 +24,10 @@ tstepcnt=501 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1. Must be
 rowcnt=150
 colcnt=150
 
-t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))+np.exp(-((y-colcnt/3.0)**2/(colcnt/20.0)+(x-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=0 slice
-t1funcxy = 'np.exp(-(((x+K**0.5)-colcnt/3.0)**2/(colcnt/20.0)+(y-rowcnt/2.0)**2/(rowcnt/2.0)))+np.exp(-(((y+K**0.5)-colcnt/3.0)**2/(colcnt/20.0)+(x-rowcnt/2.0)**2/(rowcnt/2.0)))' #(string) function of x and y that initializes the t=1 slice
+t0funcxy = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/5.0)+(y-rowcnt/2.0)**2/(rowcnt*5.0))) + np.exp(-((y-colcnt/3.0)**2/(colcnt/5.0)+(x-rowcnt/2.0)**2/(rowcnt*5.0)))' #(string) function of x and y that initializes the t=0 slice
+t1funcxy = 'np.exp(-(((x+K**0.5)-colcnt/3.0)**2/(colcnt/5.0)+(y-rowcnt/2.0)**2/(rowcnt*5.0))) + np.exp(-(((y+K**0.5)-colcnt/3.0)**2/(colcnt/5.0)+(x-rowcnt/2.0)**2/(rowcnt*5.0)))' #(string) function of x and y that initializes the t=1 slice
 
-theta = np.pi/2 #angle of incidence of grav wave
+theta = np.pi/6 #angle of incidence of grav wave
 eps=0.5 #meaning of epsilon is in the documentation
 kgrav=0.02 #this is the k_grav from cos(kz-kt)
 c=1 #c=1 for units of the wave speed

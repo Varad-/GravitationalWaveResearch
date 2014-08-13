@@ -1,8 +1,8 @@
 """ -*- coding: utf-8 -*-
 @author: Varadarajan Srinivasan
 
-This program discretizes and solves Laplace's Equation in 2 dimensions for user-inputted grid size and absolutely
-any boundary conditions (given as functions or as individual values). Each i-iteration updates progressively smaller rectangles 
+This program discretizes and solves Laplace's Equation in 2 dimensions for user-inputted grid size and any boundary 
+conditions (given as functions or as individual values). Each i-iteration updates progressively smaller rectangles 
 starting from the boundary. Note that this program is designed to allow each rectangle to update as a whole instead 
 of simply updating point after point along each rectangle. Then, that entire iterative process is itself iterated 
 until the updates are below the adjustable tolerance level.
