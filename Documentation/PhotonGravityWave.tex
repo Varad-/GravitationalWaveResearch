@@ -1,15 +1,22 @@
 \documentclass{article}
-\usepackage{amsmath,scalefnt,fullpage}
+\usepackage{amsmath,scalefnt,fullpage,fancyvrb}
 \begin{document}
 \begin{flushleft}
-{\large Building a Numerical Model of the Influence of a Gravitational Wave on an Electromagnetic Wave}
-
-The Physics behind PhotonGravityWavePerpendicularCase.py and PhotonGravityWave(2+1)-D.py
-
-\smallskip
-Varadarajan Srinivasan
-\smallskip
+{\large Building a Numerical Model of the Influence of a Gravitational Wave on an Electromagnetic Potential}
 \end{flushleft}
+The Physics behind
+\vspace{-2ex}
+\begin{verbatim}
+PhotonGravityWavePerpendicularCase(2+1)-D.py,
+PhotonGravityWaveInefficient(2+1)-D.py,
+PhotonGravityWave(2+1)-D.py.
+\end{verbatim}
+\begin{flushright}
+\bigskip
+Varadarajan Srinivasan
+\end{flushright}
+
+\smallskip
 
 Let us define a left-handed\footnote{This orientation is more convenient for our computational system because its natural 2D origin is at the top-left corner.} coordinate system along whose xy plane electromagnetic waves can travel. Consider a gravitational wave propagating along the z-axis. Let us further define the x- and y-axes to be along the polarization axes of the gravitational wave. This has the effect of stretching and contracting space along those 2 axes. So, the wave equation in the presence of a gravitational wave can be written (separating the unaffected time component) as
 \begin{equation} \label{waveeqn with grav}
@@ -22,9 +29,9 @@ u
 where $\textbf{M}$ is the space component of the metric tensor and is represented by
 \begin{equation} \label{M}
 \textbf{M}=\begin{pmatrix}
-1+f \\
- & 1-f \\
- & & 1
+1+f & 0 & 0 \\
+0 & 1-f & 0 \\
+0 & 0 & 1
 \end{pmatrix},
 \text{ \ \ \ where } f=\epsilon \cos(kz-kct).
 \end{equation}
@@ -137,15 +144,26 @@ Now, we discretize Eq. \ref{expanded LHS} in terms of our previously defined num
 +\Delta\cdot \text{nD}_Z &\Big[ f_{m,n,o,t} \sin ^2(\theta ) \cos (\theta ) \Delta\cdot\text{nD}_X(u_{m,n,o,t}) -f_{m,n,o,t} \sin (\theta ) \cos ^2(\theta ) \Delta\cdot\text{nD}_Y(u_{m,n,o,t}) \nonumber \\
 &+\frac{1}{2} (f_{m,n,o,t} \cos (2 \theta )-f+2) \Delta\cdot\text{nD}_Z(u_{m,n,o,t}) \Big].
 \end{align}
-For some uses, an explicit expression without nested functions will be necessary. We achieve this by applying Eqs. \ref{nDX and nDY} distributively\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} throughout Eq.\ref{delsqrLHS}. Rewriting, for brevity, the coefficients (written out in terms of $f$ in Eq. \ref{delsqrLHS}) as components of $\textbf{T}$ (given by Eq. \ref{T}) and evaluating at time $t-1$ for later programming convenience produces the desired explicit form.
+For some uses, an explicit expression without nested functions will be necessary. We achieve this by applying Eqs. \ref{nDX and nDY} distributively\footnote{It is easy to check that this useful trick is allowed because $\mbox{nD}(kg)=k\mbox{nD}(g)$ for scalar k as $\mbox{nD}$ is, in principle, a linear transformation.} throughout Eq.\ref{delsqrLHS}. Computing through and evaluating at time $t-1$ produces (written, for brevity, in terms of the components of $\textbf{T}(f(t,X,Y,Z))$, given by Eq. \ref{T})
 \begin{align} \label{delsqrLHS explicit}
-\Delta^2 \cdot LHS_{m,n,o,t-1}=\frac{1}{4}\Big(&{T_{0,0}}_{m,n,o,t-1}(u_{m,n+2,o,t-1}-2u_{m,n,o,t-1}+u_{m,n-2,o,t-1}) \nonumber \\
+\Delta^2 \cdot LHS_{m,n,o,t-1} &= \frac{1}{4}\Big[{T_{0,0}}_{m,n,o,t-1}(u_{m,n+2,o,t-1}-2u_{m,n,o,t-1}+u_{m,n-2,o,t-1}) \nonumber \\
 +&{T_{0,1}}_{m,n,o,t-1}(u_{m+1,n+1,o,t-1}-u_{m+1,n-1,o,t-1}-u_{m-1,n+1,o,t-1}+u_{m-1,n-1,o,t-1}) \nonumber \\
++&{T_{0,2}}_{m,n,o,t-1}(u_{m,n+1,o+1,t-1}-u_{m,n-1,o+1,t-1}-u_{m,n+1,o-1,t-1}+u_{m,n-1,o-1,t-1}) \nonumber \\
 +&{T_{1,0}}_{m,n,o,t-1}(u_{m+1,n+1,o,t-1}-u_{m-1,n+1,o,t-1}-u_{m+1,n-1,o,t-1}+u_{m-1,n-1,o,t-1}) \nonumber \\
-+&{T_{1,1}}_{m,n,o,t-1}(u_{m+2,n,o,t-1}-2u_{m,n,o,t-1}+u_{m-2,n,o,t-1})\Big) \\
-&[add\ third\ dimension.\nonumber \\
-&can't take T terms out because they depend on x,y,z too??] \nonumber
++&{T_{1,1}}_{m,n,o,t-1}(u_{m+2,n,o,t-1}-2u_{m,n,o,t-1}+u_{m-2,n,o,t-1}) \nonumber \\
++&{T_{1,2}}_{m,n,o,t-1}(u_{m+1,n,o+1,t-1}-u_{m-1,n,o+1,t-1}-u_{m+1,n,o-1,t-1}+u_{m-1,n,o-1,t-1}) \nonumber \\
++&{T_{2,0}}_{m,n,o,t-1}(u_{m,n+1,o+1,t-1}-u_{m,n+1,o-1,t-1}-u_{m,n-1,o+1,t-1}+u_{m,n-1,o-1,t-1}) \nonumber \\
++&{T_{2,1}}_{m,n,o,t-1}(u_{m+1,n,o+1,t-1}-u_{m+1,n,o-1,t-1}-u_{m-1,n,o+1,t-1}+u_{m-1,n,o-1,t-1}) \nonumber \\
++&{T_{2,2}}_{m,n,o,t-1}(u_{m,n,o+2,t-1}-2u_{m,n,o,t-1}+u_{m,n,o-2,t-1} )\Big] \nonumber \\
+=\ \frac{1}{4}\Big[{T_{0,0}}&_{m,n,o,t-1}(u_{m,n+2,o,t-1}-2u_{m,n,o,t-1}+u_{m,n-2,o,t-1}) \nonumber \\
++{T_{1,1}}&_{m,n,o,t-1}(u_{m+2,n,o,t-1}-2u_{m,n,o,t-1}+u_{m-2,n,o,t-1}) \nonumber \\
++{T_{2,2}}&_{m,n,o,t-1}(u_{m,n,o+2,t-1}-2u_{m,n,o,t-1}+u_{m,n,o-2,t-1} )\Big] \nonumber \\
++\frac{1}{2}\Big[{T_{0,1}}&_{m,n,o,t-1}(u_{m+1,n+1,o,t-1}-u_{m+1,n-1,o,t-1}-u_{m-1,n+1,o,t-1}+u_{m-1,n-1,o,t-1}) \nonumber \\
++{T_{0,2}}&_{m,n,o,t-1}(u_{m,n+1,o+1,t-1}-u_{m,n-1,o+1,t-1}-u_{m,n+1,o-1,t-1}+u_{m,n-1,o-1,t-1}) \nonumber \\
++{T_{1,2}}&_{m,n,o,t-1}(u_{m+1,n,o+1,t-1}-u_{m-1,n,o+1,t-1}-u_{m+1,n,o-1,t-1}+u_{m-1,n,o-1,t-1})\Big],
 \end{align}
+since each t-slice of $\textbf{T}$ is symmetric.
+
 The right hand side of Eq. \ref{main eqn} is easily discretized in time. Equating that to $LHS$ gives us the fully discretized form of Eq. \ref{main eqn},
 \begin{equation} \label{discr1}
 \frac{1}{\Delta^2}\ \Delta^2 \cdot LHS_{m,n,o,t-1} = \frac{1}{c^2}\ \mbox{nD}_t(\mbox{nD}_t(u_{m,n,o,t-1})).

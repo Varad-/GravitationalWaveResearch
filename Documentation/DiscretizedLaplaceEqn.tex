@@ -1,11 +1,19 @@
 \documentclass{article}
 \begin{document}
-\flushleft{
-{\large Discretizing the Laplace Equation and Computing a Numerical Solution: short documentation for DiscretizedLaplaceEqn.py}
-
+\begin{flushleft}
+{\large Discretizing the Laplace Equation and Computing a Numerical Solution}
+\end{flushleft}
+The Physics behind
+\vspace{-2ex}
+\begin{verbatim}
+DiscretizedLaplaceEqn2D.py.
+\end{verbatim}
+\begin{flushright}
 \smallskip
 Varadarajan Srinivasan
-\bigskip
+\end{flushright}
+
+\smallskip
 
 Let us first define the numerical derivative of a function f(x) at a point $x_0$ as the function's mean rate of change between $x_0-\Delta x$ and $x_0$ averaged with its mean rate of change between $x_0$ and $x_0+\Delta x$. If the function is well-behaved (differentiable at $x_0$), this can numerically approximate the true analytical value of the derivative to an arbitrarily high accuracy.
 
