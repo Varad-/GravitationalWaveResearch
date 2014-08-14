@@ -15,11 +15,11 @@ import matplotlib.animation as anim
 """
 --------------------------------------------------------------ADJUSTABLE PARAMETERS--------------------------------------------------------------
 """
-tstepcnt=200 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
-colcnt=100
+tstepcnt=400 #tstepcnt time-slices are indexed from t=0 to t=tstepcnt-1
+colcnt=101
 
-t0funcx = 'np.exp(-((x-colcnt/3.0)**2/(colcnt/2.0)))' #(string) function of x that initializes the t=0 slice
-t1funcx = 'np.exp(-(((x-K**0.5)-colcnt/3.0)**2/(colcnt/2.0)))' #(string) function of x that initializes the t=1 slice
+t0funcx = 'np.exp(-((x-colcnt/2.0)**2/(colcnt*1.5)))' #(string) function of x that initializes the t=0 slice
+t1funcx = 'np.exp(-(((x-K**0.5)-colcnt/2.0)**2/(colcnt*1.5)))' #(string) function of x that initializes the t=1 slice
 K=0.3 #K=(waveSpeed*dt/dx)**2
 """
 K is a positive unitless constant related to the speed of the wave and the discretization step sizes in space and time. For this numerical
@@ -90,5 +90,5 @@ def frame(n):
     x=np.arange(colcnt)
     ax.plot(x,u[:,n])
     
-dummy = anim.FuncAnimation(fig,frame,range(tstepcnt),interval=25)
+dummy = anim.FuncAnimation(fig,frame,range(tstepcnt),interval=10)
 pl.show()
