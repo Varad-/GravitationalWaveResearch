@@ -2,7 +2,7 @@
 \usepackage{amsmath,scalefnt,fullpage,fancyvrb}
 \begin{document}
 \begin{flushleft}
-{\large Building a Numerical Model of the Influence of a Gravitational Wave on an Electromagnetic Potential}
+{\large Building a Numerical Model of the Influence of a Gravitational Wave on an Electromagnetic Four-Potential}
 \end{flushleft}
 The Physics behind
 \vspace{-2ex}
@@ -15,10 +15,16 @@ PhotonGravityWave(2+1)-D.py.
 \bigskip
 Varadarajan Srinivasan
 \end{flushright}
+\setlength{\rightskip}{1cm}
+\setlength{\leftskip}{1cm}
+Note: All of the following is done in full 3+1 dimensions, but the implementation in Python is in (2+1)-D because that makes the resulting animated visualizations less cumbersome to display, greatly increases the resolution-to-runtime ratio, and suffices to show the desired effects. Nevertheless, the program is structured in such a way that extending it to (3+1)-D would be quick and straightforward.
 
-\smallskip
+\setlength{\leftskip}{0pt}
+\setlength{\rightskip}{0pt}
 
-Let us define a left-handed\footnote{This orientation is more convenient for our computational system because its natural 2D origin is at the top-left corner.} coordinate system along whose xy plane electromagnetic waves can travel. Consider a gravitational wave propagating along the z-axis. Let us further define the x- and y-axes to be along the polarization axes of the gravitational wave. This has the effect of stretching and contracting space along those 2 axes. So, the wave equation in the presence of a gravitational wave can be written (separating the unaffected time component) as
+\bigskip
+
+Let us define a left-handed\footnote{This orientation is more convenient for our computational system because its natural 2D origin is at the top-left corner.} coordinate system in the presence of an electromagnetic field. Consider a gravitational wave propagating along the z-axis. Let us further define the x- and y-axes to be along the polarization axes of the gravitational wave. This has the effect of stretching and contracting space along those 2 axes. This affects Maxwell's Equations such that the wave equation for a component $u$ of the electromagnetic four-potential in the influence of a gravitational wave can be written (separating the unaffected time component) as
 \begin{equation} \label{waveeqn with grav}
 \begin{pmatrix}\partial_x & \partial_y & \partial_z\end{pmatrix} 
 \textbf{M}
@@ -112,14 +118,15 @@ Z
 Thus, \begin{equation} \label{f}
 f=f(t,X,Y,Z)=\epsilon \cos\big(k\big(X \sin ^2(\theta )+\cos (\theta ) \big(Z-Y \sin (\theta )\big)-ct\big)\big).
 \end{equation}
-This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing the displacement $u(t,X,Y,Z)$ of an electromagnetic field (or, in fact, anything else obeying Eq. \ref{waveeqn flat}, the wave equation) interacting with a gravitational wave,
-\begin{equation}\label{main eqn}
+This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing $u(t,X,Y,Z)$, a component of the electromagnetic four-potential interacting with a gravitational wave.
+\begin{align}\label{main eqn}
 \boxed{
-\nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{with } f=f(t,X,Y,Z).
-}
-\end{equation}
+\nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{where } f=f(t,X,Y,Z)
+}\\
+\text{with $f(t,X,Y,Z)$ given by Eq. \ref{f}.} \nonumber
+\end{align}
 
-To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that described in WaveEquation.pdf. The electromagnetic waves are contained in the XY plane of interest. We therefore need only concern ourselves with the case $f=f(t,X,Y,0)=\epsilon \cos\big(k\big(X \sin ^2(\theta )-Y\cos (\theta ) \sin (\theta )-ct\big)\big).$ We define a numerical displacement function $u_{m,n,o,t}$ where $m,n,o,$ and $t$ are the row, column, depth-step, and time-step indices, respectively. This means that, in our graphically conveniently left-handed system, $m,n,o,$ and $t$ are the discretizations of the Y-, X-, Z-, and t-coordinates, respectively. Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. We define nD such that, for a function $g(t,X,Y,Z)$,
+To numerically compute results, we must discretize Eq. \ref{main eqn}. Our process for this will build on that described in WaveEquation.pdf. We define a numerical function\footnote{If we program in only 2+1 dimensions, we would ignore the third spatial index and Z-derivatives in all of these equations. This would also mean that $f=f(t,X,Y,0)=\epsilon \cos\big(k\big(X \sin ^2(\theta )-Y\cos (\theta ) \sin (\theta )-ct\big)\big)$.} $u_{m,n,o,t}$ where $m,n,o,$ and $t$ are the row, column, depth-step, and time-step indices, respectively. This means that, in our graphically conveniently left-handed system, $m,n,o,$ and $t$ are the discretizations of the Y-, X-, Z-, and t-coordinates, respectively. Let us generalize the numerical first derivative from WaveEquation.pdf (using the notation and names defined there) to numerical partial derivatives. We define nD such that, for a function $g(t,X,Y,Z)$,
 \begin{align} \label{nDX and nDY}
 \begin{split}
 &\mbox{nD}_X(g_{m,n,o,t})\equiv\frac{g_{m,n+1,o,t}-g_{m,n-1,o,t}}{2\Delta} \approx \frac{\partial g}{\partial X}, \\ 
