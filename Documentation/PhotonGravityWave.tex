@@ -46,7 +46,7 @@ Note that when the amplitude $\epsilon$ is 0, Eq. \ref{waveeqn with grav} reduce
 \nabla^2u=\frac{1}{c^2}\frac{\partial^2u}{\partial t^2}.
 \end{equation}
 
-Let us generalize this for any inclination of the gravitational wave. We need not generalize for azimuthal angle because we can always define a planar axis along the azimuthal direction of the wave. First, let us define a left-handed coordinate system $\langle x\prime,y\prime,z\prime\rangle$ such that the polarization axes of the gravitational wave are parallel to the $x\prime$ and $y\prime$ axes and it propagates with velocity $c \hat z\prime$. Second, we must also define a left-handed coordinate system $\langle X,Y,Z \rangle$ fixed to our frame of computation. These frames are stationary with respect to each other; they differ only in their orientations. $\langle x\prime,y\prime,z\prime\rangle$ is oriented according to the gravitational wave and $\langle X,Y,Z \rangle$ is the fixed frame to which we will apply our computational algorithms. The row, column, depth, and time steps in our numerical method form a discrete representation of the spacetime. Note that our initial coordinate system $\langle x,y,z\rangle$ was equivalent to both $\langle X,Y,Z\rangle$ and $\langle x\prime,y\prime,z\prime\rangle$ as we were only concerned with the case of the gravitational wave being perpendicular to the $XY$ plane. In our new frame, our tensor $\textbf{g}_S$ takes $f=\epsilon \cos(kz\prime-kct)$ with $t$ unchanged.
+Let us generalize this for any inclination of the gravitational wave. We need not generalize for azimuthal angle because we can always define a planar axis along the azimuthal direction of the wave. First, let us define a left-handed coordinate system $\langle x',y',z'\rangle$ such that the polarization axes of the gravitational wave are parallel to the $x'$ and $y'$ axes and it propagates with velocity $c \hat z'$. Second, we must also define a left-handed coordinate system $\langle X,Y,Z \rangle$ fixed to our frame of computation. These frames are stationary with respect to each other; they differ only in their orientations. $\langle x',y',z'\rangle$ is oriented according to the gravitational wave and $\langle X,Y,Z \rangle$ is the fixed frame to which we will apply our computational algorithms. The row, column, depth, and time steps in our numerical method form a discrete representation of $\langle t,X,Y,Z \rangle$. Note that our initial coordinate system $\langle x,y,z\rangle$ was equivalent to both $\langle X,Y,Z\rangle$ and $\langle x',y',z'\rangle$ as we were only concerned with the case of the gravitational wave being perpendicular to the $XY$ plane. In our new frame, our tensor $\textbf{g}_S$ takes $f=\epsilon \cos(kz'-kct)$ with $t$ unchanged.
 
 We know that we can always find a rotation matrix $\textbf{R}$ such that
 \begin{equation} \label{R}
@@ -55,25 +55,25 @@ X \\
 Y \\
 Z
 \end{pmatrix}=\textbf{R}\begin{pmatrix}
-x\prime \\
-y\prime \\
-z\prime
+x' \\
+y' \\
+z'
 \end{pmatrix}.
-\end{equation} Since the rotation matrix must be orthogonal, $\textbf{R}^{-1}=\textbf{R}^T$. Therefore, transposing both sides of Eq. \ref{R} shows that $\begin{pmatrix} X & Y & Z\end{pmatrix} = \begin{pmatrix}x\prime & y\prime & z\prime\end{pmatrix}\textbf{R}^{-1}.$ We can now rewrite the left hand side of Eq. \ref{waveeqn with grav} as
+\end{equation} Since the rotation matrix must be orthogonal, $\textbf{R}^{-1}=\textbf{R}^T$. Therefore, transposing both sides of Eq. \ref{R} shows that $\begin{pmatrix} X & Y & Z\end{pmatrix} = \begin{pmatrix}x' & y' & z'\end{pmatrix}\textbf{R}^{-1}.$ We can now rewrite the left hand side of Eq. \ref{waveeqn with grav} as
 \begin{align}
-LHS &= \begin{pmatrix}\partial_{x\prime} & \partial_{y\prime} & \partial_{z\prime}\end{pmatrix} 
+LHS &= \begin{pmatrix}\partial_{x'} & \partial_{y'} & \partial_{z'}\end{pmatrix} 
 \textbf{R}^{-1}\textbf{R} \  \textbf{g}_S \ \textbf{R}^{-1}\textbf{R}
-\begin{pmatrix} \partial_{x\prime} \\ \partial_{y\prime} \\ \partial_{z\prime} \end{pmatrix}
+\begin{pmatrix} \partial_{x'} \\ \partial_{y'} \\ \partial_{z'} \end{pmatrix}
 u \nonumber \\
 &= \begin{pmatrix}\partial_X & \partial_Y & \partial_Z\end{pmatrix}
 \textbf{R} \  \textbf{g}_S \ \textbf{R}^{-1}
 \begin{pmatrix} \partial_X \\ \partial_Y \\ \partial_Z \end{pmatrix}
 u. \label{LHS}
 \end{align}
-Let us define another tensor $\textbf{T}\equiv\textbf{Rg}_S\textbf{R}^{-1}$, the conjugate of $\textbf{g}_S$ by rotation. We can characterize the rotation required to go from the gravitational wave coordinate system to our computational coordinate system as Euler angle rotations about $z\prime,x\prime,z\prime$, but we have enough freedom in our coordinates to be able to always orient our $\langle X,Y,Z\rangle$ such that the last roll rotation about the new $z\prime$ axis does nothing. Thus, for an angle of incidence of $\theta$,\footnote{Note that $\theta$ is defined clockwise when viewed from above the YZ plane because our coordinate system is left-handed.}
+Let us define another tensor $\textbf{T}\equiv\textbf{Rg}_S\textbf{R}^{-1}$, the conjugate of $\textbf{g}_S$ by rotation. We can characterize the rotation required to go from the gravitational wave coordinate system to our computational coordinate system as Euler angle rotations about $z',x',z'$, but we have enough freedom in our coordinates to be able to always orient our $\langle X,Y,Z\rangle$ such that the last roll rotation about the new $z'$ axis does nothing. Thus, for an angle of incidence of $\theta$,\footnote{Note that $\theta$ is defined clockwise when viewed from above the YZ plane because our coordinate system is left-handed.}
 \begin{equation} \label{R explicit}
 \textbf{R}=
-\textbf{R}_{z\prime}\textbf{R}_{x\prime}
+\textbf{R}_{z'}\textbf{R}_{x'}
 =
 \left(
 \begin{array}{ccc}
@@ -94,12 +94,12 @@ and hence
  f \sin ^2(\theta ) \cos (\theta ) & -f \sin (\theta ) \cos ^2(\theta ) & \frac{1}{2} (f \cos (2 \theta )-f+2) \\
 \end{pmatrix}.
 \end{equation}
-We have introduced the parameter $\theta$ to convert between our two coordinate systems as our computations require all terms to be in the $\langle X,Y,Z\rangle$ system, but recall that $f=f(t,z\prime)=\epsilon \cos(kz\prime-kct)$. We therefore need to solve Eq. \ref{R} for the primed column vector with $\textbf{R}$ given by Eq. \ref{R explicit}.
+We have introduced the parameter $\theta$ to convert between our two coordinate systems as our computations require all terms to be in the $\langle X,Y,Z\rangle$ system, but recall that $f=f(t,z')=\epsilon \cos(kz'-kct)$. We therefore need to solve Eq. \ref{R} for the primed column vector with $\textbf{R}$ given by Eq. \ref{R explicit}.
 \begin{equation*}
 \begin{pmatrix}
-x\prime \\
-y\prime \\
-z\prime
+x' \\
+y' \\
+z'
 \end{pmatrix}
 = \textbf{R}^{T}\begin{pmatrix}
 X \\
@@ -118,7 +118,7 @@ Z
 Thus, \begin{equation} \label{f}
 f=f(t,X,Y,Z)=\epsilon \cos\big(k\big(X \sin ^2(\theta )+\cos (\theta ) \big(Z-Y \sin (\theta )\big)-ct\big)\big).
 \end{equation}
-This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing $u(t,X,Y,Z)$, a component of the electromagnetic four-potential interacting with a gravitational wave.
+This puts $LHS = \nabla^T \textbf{T} \nabla u$, the compact form of Eq. \ref{LHS}, entirely in terms of our computational coordinates $t,X,Y,Z$. Hence, we have the desired form of the generalized (3+1)-dimensional equation describing $u(t,X,Y,Z)$, a component of the electromagnetic four-potential interacting with a gravitational wave.
 \begin{align}\label{main eqn}
 \boxed{
 \nabla^T \textbf{T} \nabla u = \frac{1}{c^2}\frac{\partial^2 u}{\partial t^2} \ \ \ \ \mbox{with } f=f(t,X,Y,Z)
