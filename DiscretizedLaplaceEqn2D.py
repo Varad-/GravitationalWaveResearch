@@ -1,36 +1,34 @@
-""" -*- coding: utf-8 -*-
-@author: Varadarajan Srinivasan
-
-This program discretizes and solves Laplace's Equation in 2 dimensions for user-inputted grid size and any boundary 
-conditions (given as functions or as individual values). Each i-iteration updates progressively smaller rectangles 
-starting from the boundary. Note that this program is designed to allow each rectangle to update as a whole instead 
-of simply updating point after point along each rectangle. Then, that entire iterative process is itself iterated 
-until the updates are below the adjustable tolerance level.
-"""
+# -*- coding: utf-8 -*-
+#@author: Varadarajan Srinivasan
+#
+#This program discretizes and solves Laplace's Equation in 2 dimensions for user-inputted grid size and any boundary 
+#conditions (given as functions or as individual values). Each i-iteration updates progressively smaller rectangles 
+#starting from the boundary. Note that this program is designed to allow each rectangle to update as a whole instead 
+#of simply updating point after point along each rectangle. Then, that entire iterative process is itself iterated 
+#until the updates are below the adjustable tolerance level.
 
 import numpy as np
 import math as m
 import matplotlib as mpl
 import pylab as pl
 
-"""
-Very low tolerance produces very precise solution values, but slows the runtime dramatically. For the suggested tolerance
-of 0.01, grids larger than about 50x50 will take more than several seconds, but by that size the contours become virtually 
-perfectly smooth for visual purposes.
-"""
+#Very low tolerance produces very precise solution values, but slows the runtime dramatically. For the suggested tolerance
+#of 0.01, grids larger than about 50x50 will take more than several seconds, but by that size the contours become virtually 
+#perfectly smooth for visual purposes.
 tolerance=0.01
 
-"""
-Evaluates a mathematical function written as a string in Python syntax in terms of x at a specified value. It is
-tedious to allow any variable name in cases such as sin(n), making it cumbersome to let the program know which instances
-of the letter n is the variable and which is part of an in-built function
-"""
-def evalFuncOfxAtVal(func, val): #string func MUST BE IN TERMS OF x
+def evalFuncOfxAtVal(func, val):
+    """Evaluates a mathematical function written as a string in Python syntax in terms of x at a specified value. It is
+    tedious to allow any variable name in cases such as sin(n), making it cumbersome to let the program know which instances
+    of the letter n is the variable and which is part of an in-built function.
+    
+    The string func MUST BE IN TERMS OF x!
+    """
     x=val #Ignore the "not used" error your IDE might show for this line. It is used as the user inputs in terms of x.
     return eval(func)
 
-#creates a rowcount x colcount grid and returns it with user-inputted boundary conditions and zeros in the interior
 def initialize(rowcount, colcount, funcname):
+    """creates a rowcount x colcount grid and returns it with user-inputted boundary conditions and zeros in the interior"""
     f = np.zeros((rowcount,colcount))
     print 'Make sure all values are much larger than this program\'s iteration-tolerance which is 10^%d (and is easily adjustable in the code)' % m.log10(tolerance)
     opt = None
@@ -75,15 +73,14 @@ def initialize(rowcount, colcount, funcname):
                 f[row][colcount-1]=input('%s(%d,%d) = ' % (funcname, row, colcount-1))
     return f
 
-"""
-See accompanying documentation (DiscretizedLaplaceEqn.pdf) for derivation and details: the Laplace Equation, when discretized 
-implies that each point takes the average of the four neighboring point's values.
-"""
 def Laplpt(func, r, c):
+    """See accompanying documentation (DiscretizedLaplaceEqn.pdf) for derivation and details: the Laplace Equation, when discretized 
+    implies that each point takes the average of the four neighboring point's values.
+    """
     return 0.25*(func[r+1][c]+func[r-1][c]+func[r][c+1]+func[r][c-1])
 
-#solves the equation in Laplpt() once in decreasing rectangles
 def Laplace(oldphi, rows, columns):
+    """solves the equation in Laplpt() once in decreasing rectangles"""
     newphi = np.zeros((rows, columns))
     newphi[:][:] = oldphi[:][:]
     i=1 #first iteration solves along the largest rectangle that fits in the grid without including the boundary points
@@ -112,20 +109,17 @@ absChange=np.zeros((Rmax,Cmax))
 previousPhi=np.zeros((Rmax,Cmax))
 absChange=np.absolute(phi) #initialized as the first iteration so the following loop runs as long as the inits are above tolerance
 
-"""
-We have a system of equations for all the points on the interior of the grid. See the accompanying documentation for a description 
-of the process. Essentially, we iterate the already iterative Laplace() until we are arbitrarily close to the solution.
-"""
+#We have a system of equations for all the points on the interior of the grid. See the accompanying documentation for a description 
+#of the process. Essentially, we iterate the already iterative Laplace() until we are arbitrarily close to the solution.
 while np.amax(absChange) > tolerance:
     previousPhi[:][:]=phi[:][:]
     phi=Laplace(phi, Rmax, Cmax) #2nd iteration when the loop runs for the first time
     absChange=np.absolute(np.subtract(phi,previousPhi))
 
-"""
------------------------------------------------- End of Laplacian computations ------------------------------------------------
 
-Now we have the final solution stored in the 2d array phi. We can show this graphically:
-"""
+#------------------------------------------------ End of Laplacian computations ------------------------------------------------
+#Now we have the final solution stored in the 2d array phi. We can show this graphically:
+
 contourcount = 10 #change this to plot with a different number of contours
 
 x = np.linspace(0,Cmax-1,Cmax)
@@ -140,4 +134,3 @@ print '\nNumerical solution to Laplace Equation with the given boundary conditio
 
 print phi #solution as a matrix
 pl.show() #solution as a contour graph
-
