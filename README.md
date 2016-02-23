@@ -7,6 +7,10 @@ The final product is PhotonGravityWave(2+1)-D.py, and PhotonGravityWavePerpendic
 
 These programs can be easily extended to 3 spatial dimension, but, due to the reasons outlined in the documentation, I think 2+1 dimensional output is the most appropriate choice.
 
-
-
 All work was done at the University of Zurich.
+
+
+The write-up demonstrating the validity of my numerical model.
+GravitationalWaveResearch/Building.the.Numerical.Model.pdf
+
+The poster presenting this work at the American Astronomical Society's annual conference. https://github.com/Varad-/GravitationalWaveResearch/blob/master/AAS.poster.pdf
