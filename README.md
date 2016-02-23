@@ -10,7 +10,7 @@ These programs can be easily extended to 3 spatial dimension, but, due to the re
 All work was done at the University of Zurich.
 
 
-The write-up demonstrating the validity of my numerical model.
+The write-up demonstrating the validity of my numerical model:
 https://github.com/Varad-/GravitationalWaveResearch/blob/master/Building.the.Numerical.Model.pdf
 
-The poster presenting this work at the American Astronomical Society's annual conference. https://github.com/Varad-/GravitationalWaveResearch/blob/master/AAS.poster.pdf
+The poster presenting this work at the American Astronomical Society's annual conference: https://github.com/Varad-/GravitationalWaveResearch/blob/master/AAS.poster.pdf
